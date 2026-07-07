@@ -5,10 +5,14 @@
 -- Enable pgcrypto extension if not enabled
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+-- Temizleme (Eski hatalı tanımlamaları sil)
+DELETE FROM public.profiles WHERE id IN ('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'f1e2d3c4-b5a6-7988-9766-5e4d3c2b1a0f');
+DELETE FROM auth.users WHERE id IN ('a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d', 'f1e2d3c4-b5a6-7988-9766-5e4d3c2b1a0f');
+
 -- 1. Süper Admin (Platform Sahibi / Patron)
--- E-posta: patron@aidatom.com
--- Şifre: Patron123!
 -- Telefon: +90 500 000 00 01
+-- Şifre: Patron123!
+-- E-posta: 905000000001@aidatom.com (Workaround email)
 INSERT INTO auth.users (
   instance_id,
   id,
@@ -27,7 +31,7 @@ INSERT INTO auth.users (
   'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
   'authenticated',
   'authenticated',
-  'patron@aidatom.com',
+  '905000000001@aidatom.com',
   crypt('Patron123!', gen_salt('bf', 10)),
   now(),
   '{"provider":"email","providers":["email"]}',
@@ -35,7 +39,7 @@ INSERT INTO auth.users (
   now(),
   now(),
   '905000000001'
-) ON CONFLICT (id) DO NOTHING;
+);
 
 -- Profil rolünü super_admin ve durumunu approved yap
 UPDATE public.profiles
@@ -44,9 +48,9 @@ WHERE id = 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d';
 
 
 -- 2. Sistem Yöneticisi (Evrak Kontrol & Onay Ekibi)
--- E-posta: admin@aidatom.com
--- Şifre: Admin123!
 -- Telefon: +90 500 000 00 02
+-- Şifre: Admin123!
+-- E-posta: 905000000002@aidatom.com (Workaround email)
 INSERT INTO auth.users (
   instance_id,
   id,
@@ -65,7 +69,7 @@ INSERT INTO auth.users (
   'f1e2d3c4-b5a6-7988-9766-5e4d3c2b1a0f',
   'authenticated',
   'authenticated',
-  'admin@aidatom.com',
+  '905000000002@aidatom.com',
   crypt('Admin123!', gen_salt('bf', 10)),
   now(),
   '{"provider":"email","providers":["email"]}',
@@ -73,7 +77,7 @@ INSERT INTO auth.users (
   now(),
   now(),
   '905000000002'
-) ON CONFLICT (id) DO NOTHING;
+);
 
 -- Profil rolünü system_admin ve durumunu approved yap
 UPDATE public.profiles
