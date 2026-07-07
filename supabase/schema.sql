@@ -414,16 +414,59 @@ CREATE TRIGGER update_sms_templates_updated_at BEFORE UPDATE ON sms_templates FO
 
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_full_name TEXT;
+  v_phone TEXT;
+  v_email TEXT;
+  v_manager_type manager_type;
+  v_role user_role;
 BEGIN
-  INSERT INTO public.profiles (id, full_name, phone, email, manager_type, role, status)
+  -- Extract metadata safely
+  v_full_name := COALESCE(NEW.raw_user_meta_data->>'full_name', '');
+  
+  -- Resolve phone: check NEW.phone first, then raw_user_meta_data, then generate a unique temp one if completely missing (to prevent UNIQUE constraint crashes)
+  v_phone := COALESCE(NEW.phone, NEW.raw_user_meta_data->>'phone');
+  IF v_phone IS NULL OR v_phone = '' THEN
+    v_phone := 'TEMP_' || NEW.id::text;
+  END IF;
+
+  v_email := COALESCE(NEW.email, '');
+
+  -- Safely parse manager_type
+  BEGIN
+    v_manager_type := COALESCE(NEW.raw_user_meta_data->>'manager_type', 'individual')::manager_type;
+  EXCEPTION WHEN OTHERS THEN
+    v_manager_type := 'individual'::manager_type;
+  END;
+
+  -- Safely parse role
+  BEGIN
+    v_role := COALESCE(NEW.raw_user_meta_data->>'role', 'site_manager')::user_role;
+  EXCEPTION WHEN OTHERS THEN
+    v_role := 'site_manager'::user_role;
+  END;
+
+  INSERT INTO public.profiles (
+    id, 
+    full_name, 
+    phone, 
+    email, 
+    manager_type, 
+    role, 
+    status,
+    company_name,
+    tax_number
+  )
   VALUES (
     NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-    COALESCE(NEW.phone, NEW.raw_user_meta_data->>'phone', ''),
-    COALESCE(NEW.email, ''),
-    COALESCE((NEW.raw_user_meta_data->>'manager_type')::manager_type, 'individual'),
-    COALESCE((NEW.raw_user_meta_data->>'role')::user_role, 'site_manager'),
-    'pending_documents'
+    v_full_name,
+    v_phone,
+    v_email,
+    v_manager_type,
+    v_role,
+    'pending_documents',
+    NEW.raw_user_meta_data->>'company_name',
+    NEW.raw_user_meta_data->>'tax_number'
   );
   RETURN NEW;
 END;
