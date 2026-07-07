@@ -430,7 +430,7 @@ BEGIN
     v_phone := 'TEMP_' || NEW.id::text;
   END IF;
 
-  v_email := COALESCE(NEW.email, '');
+  v_email := COALESCE(NEW.raw_user_meta_data->>'email', NEW.email, '');
 
   -- Safely parse manager_type
   BEGIN
