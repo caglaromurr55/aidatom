@@ -925,3 +925,43 @@ CREATE INDEX IF NOT EXISTS idx_notifications_is_read ON notifications(is_read);
 -- audit_logs indexes
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC);
+
+
+-- ===================================================
+-- AUTOMATIC AUTH CONFIRMATION TRIGGER
+-- ===================================================
+
+CREATE OR REPLACE FUNCTION public.auto_confirm_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.email_confirmed_at := now();
+  NEW.phone_confirmed_at := now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS tr_auto_confirm_new_user ON auth.users;
+CREATE TRIGGER tr_auto_confirm_new_user
+  BEFORE INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.auto_confirm_new_user();
+
+
+-- ===================================================
+-- STORAGE SETUP (documents bucket)
+-- ===================================================
+
+-- Create the documents bucket if not exists
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('documents', 'documents', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Enable storage policies
+DROP POLICY IF EXISTS "Allow authenticated uploads" ON storage.objects;
+CREATE POLICY "Allow authenticated uploads" ON storage.objects
+  FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'documents');
+
+DROP POLICY IF EXISTS "Allow public read access" ON storage.objects;
+CREATE POLICY "Allow public read access" ON storage.objects
+  FOR SELECT TO public
+  USING (bucket_id = 'documents');
