@@ -965,3 +965,29 @@ DROP POLICY IF EXISTS "Allow public read access" ON storage.objects;
 CREATE POLICY "Allow public read access" ON storage.objects
   FOR SELECT TO public
   USING (bucket_id = 'documents');
+
+
+-- ===================================================
+-- PASSWORD RESET BY PHONE (WORKAROUND)
+-- ===================================================
+
+CREATE OR REPLACE FUNCTION public.reset_user_password_by_phone(p_phone text, p_new_password text)
+RETURNS boolean AS $$
+DECLARE
+  v_user_id uuid;
+BEGIN
+  -- Get user_id from profiles
+  SELECT id INTO v_user_id FROM public.profiles WHERE phone = p_phone;
+  
+  IF v_user_id IS NULL THEN
+    RETURN false;
+  END IF;
+  
+  -- Update auth.users encrypted_password
+  UPDATE auth.users 
+  SET encrypted_password = crypt(p_new_password, gen_salt('bf'))
+  WHERE id = v_user_id;
+  
+  RETURN true;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;

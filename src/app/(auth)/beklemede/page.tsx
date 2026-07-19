@@ -21,9 +21,9 @@ export default function PendingReviewPage() {
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800 }}>
-          <div style={{ width: 36, height: 36, background: 'var(--gradient-primary)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', color: '#fff' }}>A</div>
-          <span><span className="text-gradient">Aidat</span>om</span>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800 }}>
+          <span style={{ color: '#0FA3A3' }}>AİDAT</span>
+          <span style={{ color: '#0F1F3D' }}>OM</span>
         </a>
         <button onClick={handleLogout} className="btn btn-ghost btn-sm">
           Çıkış Yap

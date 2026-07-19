@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { validatePassword } from '@/lib/utils';
 import '../auth.css';
 
 export default function ResetPasswordPage() {
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -15,6 +16,15 @@ export default function ResetPasswordPage() {
 
   const supabase = createClient();
   const passwordStrength = validatePassword(password);
+
+  useEffect(() => {
+    const savedPhone = sessionStorage.getItem('reset_phone');
+    if (!savedPhone) {
+      window.location.href = '/sifremi-unuttum';
+    } else {
+      setPhone(savedPhone);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,15 +43,23 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: password,
+      const { data, error: rpcError } = await supabase.rpc('reset_user_password_by_phone', {
+        p_phone: phone,
+        p_new_password: password,
       });
 
-      if (updateError) {
-        setError('Şifre güncellenirken bir hata oluştu: ' + updateError.message);
+      if (rpcError) {
+        setError('Şifre güncellenirken bir hata oluştu: ' + rpcError.message);
         return;
       }
 
+      if (data === false) {
+        setError('Bu telefon numarasına ait bir kullanıcı bulunamadı.');
+        return;
+      }
+
+      // Success
+      sessionStorage.removeItem('reset_phone');
       setSuccess(true);
     } catch {
       setError('Beklenmeyen bir hata oluştu.');

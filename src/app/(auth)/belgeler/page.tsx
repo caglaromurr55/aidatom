@@ -223,6 +223,54 @@ export default function DocumentUploadPage() {
     window.location.href = '/';
   };
 
+  const downloadTemplate = (type: DocumentType) => {
+    let content = '';
+    let filename = '';
+    
+    if (type === 'karar_defteri') {
+      content = `AİDATOM APARTMAN/SİTE YÖNETİMİ KARAR DEFTERİ ÖRNEĞİ\n\n` +
+                `Karar Tarihi: ${new Date().toLocaleDateString('tr-TR')}\n` +
+                `Karar No: 1\n` +
+                `Toplantı Konusu: Yönetici Ataması ve Yetkilendirme\n\n` +
+                `Gündem ve Karar:\n` +
+                `Apartman/Site kat malikleri kurulumuz toplanarak oy birliği ile yönetici seçimi gerçekleştirmiştir.\n` +
+                `Yeni dönem için site yöneticisi olarak seçilmiştir. Kendisine Aidatom.com platformu üzerinden\n` +
+                `sitenin yönetim işlemlerini yürütmesi, aidat alacak takibi yapması, gecikme faizi işletmesi,\n` +
+                `SMS gönderimleri yapması ve gerekli hallerde alacakları icra dairesine devretmesi hususlarında\n` +
+                `tüm yetkiler verilmiştir.\n\n` +
+                `Kat Malikleri İmzaları:\n` +
+                `1. Ad Soyad (İmza)\n` +
+                `2. Ad Soyad (İmza)\n` +
+                `3. Ad Soyad (İmza)\n`;
+      filename = 'karar_defteri_ornegi.txt';
+    } else if (type === 'sozlesme') {
+      content = `AİDATOM PLATFORM KULLANIM SÖZLEŞMESİ\n\n` +
+                `1. TARAFLAR\n` +
+                `İşbu sözleşme, Aidatom.com (Platform) ile Platformu kullanan Yönetici/Yönetim Şirketi arasında akdedilmiştir.\n\n` +
+                `2. KONU\n` +
+                `Yönetici, sorumluluğu altındaki sitelerin sakin borç/tahsilat takibi, gecikme faizi hesaplamaları,\n` +
+                `SMS bilgilendirmeleri ve icra takip hazırlığı işlemlerinde Platform hizmetlerinden yararlanacaktır.\n\n` +
+                `3. HAK VE YÜKÜMLÜLÜKLER\n` +
+                `- Yönetici, sisteme girdiği tüm verilerin doğruluğundan ve KVKK uyumluluğundan sorumludur.\n` +
+                `- Platform, verilerin güvenliğinden ve sistemin kesintisiz çalışmasından sorumludur.\n` +
+                `- İcra takibine devredilen borç kalemleri ve sakin bilgileri, entegre hukuk modülü ile avukata aktarılır.\n\n` +
+                `Yönetici Adı Soyadı:\n` +
+                `İmza:\n`;
+      filename = 'aidatom_kullanim_sozlesmesi.txt';
+    }
+    
+    if (content) {
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{ 
@@ -248,9 +296,9 @@ export default function DocumentUploadPage() {
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
-        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800 }}>
-          <div style={{ width: 36, height: 36, background: 'var(--gradient-primary)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', color: '#fff' }}>A</div>
-          <span><span className="text-gradient">Aidat</span>om</span>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--font-display)', fontSize: '1.5rem', fontWeight: 800 }}>
+          <span style={{ color: '#0FA3A3' }}>AİDAT</span>
+          <span style={{ color: '#0F1F3D' }}>OM</span>
         </a>
         <button onClick={handleLogout} className="btn btn-ghost btn-sm">
           Çıkış Yap
@@ -368,8 +416,10 @@ export default function DocumentUploadPage() {
                       {/* Download template */}
                       {docConfig.hasDownload && (
                         <button
+                          type="button"
                           className="btn btn-ghost btn-sm"
                           style={{ marginTop: 'var(--space-sm)', color: 'var(--primary-400)' }}
+                          onClick={() => downloadTemplate(docConfig.type)}
                         >
                           ⬇ {docConfig.downloadLabel}
                         </button>
