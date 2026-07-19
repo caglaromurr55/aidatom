@@ -95,19 +95,16 @@ export default function RegisterPage() {
         <div className="auth-container animate-fade-in-up">
           <div className="auth-logo">
             <a href="/">
-              <div className="logo-icon">A</div>
-              <span>
-                <span className="text-gradient">Aidat</span>om
-              </span>
+              <span className="logo-teal">AİDAT</span>OM
             </a>
           </div>
           <div className="auth-card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: 'var(--space-lg)' }}>✅</div>
+            <div style={{ fontSize: '3rem', marginBottom: '24px' }}>✅</div>
             <h1>Kayıt Başarılı!</h1>
-            <p className="subtitle" style={{ marginBottom: 'var(--space-xl)' }}>
+            <p className="subtitle" style={{ marginBottom: '24px' }}>
               Hesabınız oluşturuldu. Şimdi giriş yaparak belgelerinizi yükleyebilirsiniz.
             </p>
-            <a href="/giris" className="btn btn-primary btn-lg" style={{ width: '100%' }}>
+            <a href="/giris" className="btn-auth-submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               Giriş Yap
             </a>
           </div>
@@ -121,10 +118,7 @@ export default function RegisterPage() {
       <div className="auth-container animate-fade-in-up">
         <div className="auth-logo">
           <a href="/">
-            <div className="logo-icon">A</div>
-            <span>
-              <span className="text-gradient">Aidat</span>om
-            </span>
+            <span className="logo-teal">AİDAT</span>OM
           </a>
         </div>
 
@@ -305,18 +299,11 @@ export default function RegisterPage() {
 
             <button
               type="submit"
-              className="btn btn-primary btn-lg"
-              style={{ width: '100%', marginTop: 'var(--space-md)' }}
+              className="btn-auth-submit"
+              style={{ marginTop: '16px' }}
               disabled={loading || !passwordStrength.isValid}
             >
-              {loading ? (
-                <>
-                  <span className="spinner" style={{ width: '18px', height: '18px', borderWidth: '2px' }}></span>
-                  Kayıt yapılıyor...
-                </>
-              ) : (
-                'Üye Ol'
-              )}
+              {loading ? 'Kayıt yapılıyor...' : 'Üye Ol'}
             </button>
           </form>
 

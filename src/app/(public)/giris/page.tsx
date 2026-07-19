@@ -60,10 +60,7 @@ export default function LoginPage() {
       <div className="auth-container animate-fade-in-up">
         <div className="auth-logo">
           <a href="/">
-            <div className="logo-icon">A</div>
-            <span>
-              <span className="text-gradient">Aidat</span>om
-            </span>
+            <span className="logo-teal">AİDAT</span>OM
           </a>
         </div>
 
@@ -124,26 +121,18 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--space-lg)' }}>
-              <a href="/sifremi-unuttum" style={{ fontSize: '0.875rem', color: 'var(--primary-400)', fontWeight: 500 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
+              <a href="/sifremi-unuttum" style={{ fontSize: '0.875rem', color: '#0FA3A3', fontWeight: 600, textDecoration: 'underline' }}>
                 Şifremi Unuttum
               </a>
             </div>
 
             <button
               type="submit"
-              className="btn btn-primary btn-lg"
-              style={{ width: '100%' }}
+              className="btn-auth-submit"
               disabled={loading}
             >
-              {loading ? (
-                <>
-                  <span className="spinner" style={{ width: '18px', height: '18px', borderWidth: '2px' }}></span>
-                  Giriş yapılıyor...
-                </>
-              ) : (
-                'Giriş Yap'
-              )}
+              {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
             </button>
           </form>
 

@@ -56,19 +56,16 @@ export default function ResetPasswordPage() {
         <div className="auth-container animate-fade-in-up">
           <div className="auth-logo">
             <a href="/">
-              <div className="logo-icon">A</div>
-              <span>
-                <span className="text-gradient">Aidat</span>om
-              </span>
+              <span className="logo-teal">AİDAT</span>OM
             </a>
           </div>
           <div className="auth-card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: 'var(--space-lg)' }}>🎉</div>
+            <div style={{ fontSize: '3rem', marginBottom: '24px' }}>🎉</div>
             <h1>Şifreniz Güncellendi</h1>
-            <p className="subtitle" style={{ marginBottom: 'var(--space-xl)' }}>
+            <p className="subtitle" style={{ marginBottom: '24px' }}>
               Yeni şifreniz başarıyla kaydedildi. Şimdi giriş yapabilirsiniz.
             </p>
-            <a href="/giris" className="btn btn-primary btn-lg" style={{ width: '100%' }}>
+            <a href="/giris" className="btn-auth-submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               Giriş Yap
             </a>
           </div>
@@ -82,10 +79,7 @@ export default function ResetPasswordPage() {
       <div className="auth-container animate-fade-in-up">
         <div className="auth-logo">
           <a href="/">
-            <div className="logo-icon">A</div>
-            <span>
-              <span className="text-gradient">Aidat</span>om
-            </span>
+            <span className="logo-teal">AİDAT</span>OM
           </a>
         </div>
 
@@ -143,7 +137,7 @@ export default function ResetPasswordPage() {
               )}
             </div>
 
-            <div className="form-group" style={{ marginBottom: 'var(--space-xl)' }}>
+            <div className="form-group" style={{ marginBottom: '24px' }}>
               <label className="form-label" htmlFor="confirm-password">
                 Şifre Tekrar <span className="required">*</span>
               </label>
@@ -160,8 +154,7 @@ export default function ResetPasswordPage() {
 
             <button
               type="submit"
-              className="btn btn-primary btn-lg"
-              style={{ width: '100%' }}
+              className="btn-auth-submit"
               disabled={loading || !passwordStrength.isValid}
             >
               {loading ? 'İşleniyor...' : 'Şifreyi Güncelle'}
