@@ -15,7 +15,7 @@ export default function AdminLayout({
   const [profile, setProfile] = useState<Profile | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const loadProfile = useCallback(async () => {
+  const loadData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -28,8 +28,8 @@ export default function AdminLayout({
   }, [supabase]);
 
   useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+    loadData();
+  }, [loadData]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -38,20 +38,25 @@ export default function AdminLayout({
 
   const navItems = [
     {
-      section: 'Platform Kontrolü',
+      section: 'Platform Sahibi',
       items: [
-        { href: '/admin', label: 'Özet İstatistikler', icon: '📊' },
-        { href: '/admin/kullanicilar', label: 'Üye Yöneticiler', icon: '👥' },
+        { href: '/admin', label: 'Genel Bakış', icon: '📊' },
+        { href: '/admin/kullanicilar', label: 'Tüm Kullanıcılar', icon: '👥' },
       ],
     },
   ];
 
   return (
     <div className="panel-layout">
-      {/* Sidebar Overlay (Mobile) */}
+      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
-          className="sidebar-overlay active"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 31, 61, 0.4)',
+            zIndex: 99,
+          }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -59,12 +64,12 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <a href="/admin" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800 }}>
-            <div style={{ width: 32, height: 32, background: 'var(--gradient-primary)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', color: '#fff' }}>A</div>
-            <span><span className="text-gradient">Aidat</span>om</span>
+          <a href="/admin" className="sidebar-logo">
+            <span className="logo-teal">AİDAT</span>
+            <span className="logo-white">OM</span>
           </a>
-          <div className="text-xs" style={{ color: 'var(--text-tertiary)', marginTop: 'var(--space-xs)' }}>
-            Süper Admin (Patron)
+          <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
+            Süper Admin Konsolu
           </div>
         </div>
 
@@ -72,70 +77,73 @@ export default function AdminLayout({
           {navItems.map((section) => (
             <div key={section.section}>
               <div className="sidebar-section-title">{section.section}</div>
-              {section.items.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={`sidebar-link ${pathname === item.href ? 'active' : ''}`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="icon">{item.icon}</span>
-                  <span style={{ flex: 1 }}>{item.label}</span>
-                </a>
-              ))}
+              {section.items.map((item) => {
+                const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className={`sidebar-link ${isActive ? 'active' : ''}`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <div className="sidebar-link-inner">
+                      <span>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
+                  </a>
+                );
+              })}
             </div>
           ))}
         </nav>
 
         <div className="sidebar-footer">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-sm)', marginBottom: 'var(--space-sm)' }}>
-            <div style={{ 
-              width: 36, height: 36, borderRadius: '50%', 
-              background: 'var(--gradient-primary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.875rem', fontWeight: 700, color: '#fff',
-              flexShrink: 0,
-            }}>
+          <div className="sidebar-user">
+            <div className="sidebar-user-avatar" style={{ backgroundColor: '#8B5CF6' }}>
               {profile?.full_name?.charAt(0) || 'P'}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="text-sm" style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {profile?.full_name || 'Patron'}
-              </div>
-              <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                Süper Yetkili
-              </div>
+            <div className="sidebar-user-info">
+              <span className="sidebar-user-name">{profile?.full_name || 'Patron Süper Admin'}</span>
+              <span className="sidebar-user-role">Platform Sahibi</span>
             </div>
           </div>
-          <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ width: '100%' }}>
-            🚪 Çıkış Yap
+          <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }} title="Çıkış Yap">
+            🚪
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="main-content">
-        {/* Top Bar */}
-        <div style={{
-          padding: 'var(--space-md) var(--space-xl)',
-          borderBottom: '1px solid var(--border-primary)',
-          background: 'var(--bg-secondary)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
+      {/* Main Wrapper */}
+      <div className="main-wrapper">
+        <header className="topbar">
           <button
-            className="mobile-menu-btn"
+            className="topbar-mobile-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Menü"
           >
             ☰
           </button>
-          <div style={{ flex: 1 }}></div>
-        </div>
 
-        {children}
-      </main>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Süper Admin Konsolu</span>
+          </div>
+
+          <div className="topbar-right">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {profile?.full_name || 'Patron'}
+              </span>
+              <span className="badge badge-primary" style={{ backgroundColor: '#F3E8FF', color: '#6B21A8', borderColor: '#E9D5FF' }}>
+                Süper Admin
+              </span>
+            </div>
+          </div>
+        </header>
+
+        <main className="page-container">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

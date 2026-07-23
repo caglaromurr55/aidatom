@@ -71,7 +71,7 @@ export default function SistemLayout({
 
   const navItems = [
     {
-      section: 'Yönetim',
+      section: 'Yönetim Merkezi',
       items: [
         { href: '/sistem', label: 'Dashboard', icon: '📊' },
         { href: '/sistem/evrak-kontrol', label: 'Evrak Kontrol', icon: '📋', badge: pendingApprovals },
@@ -80,21 +80,19 @@ export default function SistemLayout({
         { href: '/sistem/devirler', label: 'Yönetici Devirleri', icon: '🔄', badge: pendingHandovers },
       ],
     },
-    {
-      section: 'Ayarlar',
-      items: [
-        { href: '/sistem/sms-sablonlari', label: 'SMS Şablonları', icon: '💬' },
-        { href: '/sistem/sistem-ayarlari', label: 'Sistem Ayarları', icon: '⚙️' },
-      ],
-    },
   ];
 
   return (
     <div className="panel-layout">
-      {/* Sidebar Overlay (Mobile) */}
+      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
-          className="sidebar-overlay active"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 31, 61, 0.4)',
+            zIndex: 99,
+          }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -102,12 +100,12 @@ export default function SistemLayout({
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <a href="/sistem" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800 }}>
-            <div style={{ width: 32, height: 32, background: 'var(--gradient-primary)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', color: '#fff' }}>A</div>
-            <span><span className="text-gradient">Aidat</span>om</span>
+          <a href="/sistem" className="sidebar-logo">
+            <span className="logo-teal">AİDAT</span>
+            <span className="logo-white">OM</span>
           </a>
-          <div className="text-xs" style={{ color: 'var(--text-tertiary)', marginTop: 'var(--space-xs)' }}>
-            Sistem Yöneticisi
+          <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
+            Sistem Yönetim Paneli
           </div>
         </div>
 
@@ -115,81 +113,79 @@ export default function SistemLayout({
           {navItems.map((section) => (
             <div key={section.section}>
               <div className="sidebar-section-title">{section.section}</div>
-              {section.items.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={`sidebar-link ${pathname === item.href ? 'active' : ''}`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="icon">{item.icon}</span>
-                  <span style={{ flex: 1 }}>{item.label}</span>
-                  {item.badge ? (
-                    <span className="badge badge-error" style={{ fontSize: '0.6875rem', padding: '2px 8px' }}>
-                      {item.badge}
-                    </span>
-                  ) : null}
-                </a>
-              ))}
+              {section.items.map((item) => {
+                const isActive = pathname === item.href || (item.href !== '/sistem' && pathname.startsWith(item.href));
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className={`sidebar-link ${isActive ? 'active' : ''}`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <div className="sidebar-link-inner">
+                      <span>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
+                    {item.badge ? (
+                      <span className="sidebar-badge">{item.badge}</span>
+                    ) : null}
+                  </a>
+                );
+              })}
             </div>
           ))}
         </nav>
 
         <div className="sidebar-footer">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-sm)', marginBottom: 'var(--space-sm)' }}>
-            <div style={{ 
-              width: 36, height: 36, borderRadius: '50%', 
-              background: 'var(--gradient-primary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.875rem', fontWeight: 700, color: '#fff',
-              flexShrink: 0,
-            }}>
+          <div className="sidebar-user">
+            <div className="sidebar-user-avatar" style={{ backgroundColor: 'var(--warning)' }}>
               {profile?.full_name?.charAt(0) || 'S'}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="text-sm" style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {profile?.full_name || 'Sistem Yöneticisi'}
-              </div>
-              <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                {profile?.phone ? `+${profile.phone}` : ''}
-              </div>
+            <div className="sidebar-user-info">
+              <span className="sidebar-user-name">{profile?.full_name || 'Sistem Yöneticisi'}</span>
+              <span className="sidebar-user-role">Sistem Admin</span>
             </div>
           </div>
-          <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ width: '100%' }}>
-            🚪 Çıkış Yap
+          <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }} title="Çıkış Yap">
+            🚪
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="main-content">
-        {/* Top Bar */}
-        <div style={{
-          padding: 'var(--space-md) var(--space-xl)',
-          borderBottom: '1px solid var(--border-primary)',
-          background: 'var(--bg-secondary)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
+      {/* Main Wrapper */}
+      <div className="main-wrapper">
+        <header className="topbar">
           <button
-            className="mobile-menu-btn"
+            className="topbar-mobile-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Menü"
           >
             ☰
           </button>
-          <div style={{ flex: 1 }}></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-            <button className="btn btn-icon btn-ghost" style={{ position: 'relative' }}>
-              🔔
-              {unreadNotifs > 0 && <span className="notification-dot"></span>}
-            </button>
-          </div>
-        </div>
 
-        {children}
-      </main>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Sistem Operasyon Paneli</span>
+          </div>
+
+          <div className="topbar-right">
+            <button className="topbar-icon-btn" title="Bildirimler">
+              🔔
+              {unreadNotifs > 0 && <span className="topbar-badge-count">{unreadNotifs}</span>}
+            </button>
+            <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--border-primary)' }}></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {profile?.full_name || 'Sistem Admin'}
+              </span>
+              <span className="badge badge-warning">Admin</span>
+            </div>
+          </div>
+        </header>
+
+        <main className="page-container">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

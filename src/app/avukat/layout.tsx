@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/types';
 
-export default function LawyerLayout({
+export default function AvukatLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -15,7 +15,7 @@ export default function LawyerLayout({
   const [profile, setProfile] = useState<Profile | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const loadProfile = useCallback(async () => {
+  const loadData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -28,8 +28,8 @@ export default function LawyerLayout({
   }, [supabase]);
 
   useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
+    loadData();
+  }, [loadData]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -38,7 +38,7 @@ export default function LawyerLayout({
 
   const navItems = [
     {
-      section: 'Hukuk İşlemleri',
+      section: 'Hukuk Operasyonu',
       items: [
         { href: '/avukat', label: 'İcra Takip Listesi', icon: '⚖️' },
       ],
@@ -47,10 +47,15 @@ export default function LawyerLayout({
 
   return (
     <div className="panel-layout">
-      {/* Sidebar Overlay (Mobile) */}
+      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
-          className="sidebar-overlay active"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 31, 61, 0.4)',
+            zIndex: 99,
+          }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -58,12 +63,12 @@ export default function LawyerLayout({
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <a href="/avukat" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800 }}>
-            <div style={{ width: 32, height: 32, background: 'var(--gradient-primary)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', color: '#fff' }}>A</div>
-            <span><span className="text-gradient">Aidat</span>om</span>
+          <a href="/avukat" className="sidebar-logo">
+            <span className="logo-teal">AİDAT</span>
+            <span className="logo-white">OM</span>
           </a>
-          <div className="text-xs" style={{ color: 'var(--text-tertiary)', marginTop: 'var(--space-xs)' }}>
-            Hukuk Bürosu Ekranı
+          <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
+            Avukat Portalı
           </div>
         </div>
 
@@ -71,70 +76,71 @@ export default function LawyerLayout({
           {navItems.map((section) => (
             <div key={section.section}>
               <div className="sidebar-section-title">{section.section}</div>
-              {section.items.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={`sidebar-link ${pathname === item.href ? 'active' : ''}`}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="icon">{item.icon}</span>
-                  <span style={{ flex: 1 }}>{item.label}</span>
-                </a>
-              ))}
+              {section.items.map((item) => {
+                const isActive = pathname === item.href || (item.href !== '/avukat' && pathname.startsWith(item.href));
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className={`sidebar-link ${isActive ? 'active' : ''}`}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <div className="sidebar-link-inner">
+                      <span>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
+                  </a>
+                );
+              })}
             </div>
           ))}
         </nav>
 
         <div className="sidebar-footer">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-sm)', marginBottom: 'var(--space-sm)' }}>
-            <div style={{ 
-              width: 36, height: 36, borderRadius: '50%', 
-              background: 'var(--gradient-primary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.875rem', fontWeight: 700, color: '#fff',
-              flexShrink: 0,
-            }}>
+          <div className="sidebar-user">
+            <div className="sidebar-user-avatar" style={{ backgroundColor: 'var(--color-navy-light)' }}>
               {profile?.full_name?.charAt(0) || 'A'}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="text-sm" style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {profile?.full_name || 'Avukat'}
-              </div>
-              <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                {profile?.phone ? `+${profile.phone}` : ''}
-              </div>
+            <div className="sidebar-user-info">
+              <span className="sidebar-user-name">{profile?.full_name || 'Hukuk Departmanı'}</span>
+              <span className="sidebar-user-role">Sözleşmeli Avukat</span>
             </div>
           </div>
-          <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ width: '100%' }}>
-            🚪 Çıkış Yap
+          <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }} title="Çıkış Yap">
+            🚪
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="main-content">
-        {/* Top Bar */}
-        <div style={{
-          padding: 'var(--space-md) var(--space-xl)',
-          borderBottom: '1px solid var(--border-primary)',
-          background: 'var(--bg-secondary)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
+      {/* Main Wrapper */}
+      <div className="main-wrapper">
+        <header className="topbar">
           <button
-            className="mobile-menu-btn"
+            className="topbar-mobile-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Menü"
           >
             ☰
           </button>
-          <div style={{ flex: 1 }}></div>
-        </div>
 
-        {children}
-      </main>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Hukuki Takip Portalı</span>
+          </div>
+
+          <div className="topbar-right">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {profile?.full_name || 'Avukat'}
+              </span>
+              <span className="badge badge-info">Hukuk Servisi</span>
+            </div>
+          </div>
+        </header>
+
+        <main className="page-container">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

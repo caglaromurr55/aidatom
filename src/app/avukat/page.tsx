@@ -66,9 +66,9 @@ export default function LawyerDashboard() {
 
   if (loading && cases.length === 0) {
     return (
-      <div className="page-body">
+      <div>
         {[1, 2, 3].map((i) => (
-          <div key={i} className="skeleton" style={{ height: 80, borderRadius: 'var(--radius-lg)', marginBottom: 'var(--space-md)' }}></div>
+          <div key={i} className="card" style={{ height: 80, backgroundColor: 'var(--bg-secondary)', marginBottom: '1rem', opacity: 0.6 }}></div>
         ))}
       </div>
     );
@@ -77,25 +77,29 @@ export default function LawyerDashboard() {
   return (
     <>
       <div className="page-header">
-        <h1 className="heading-sm">İcra Takip Dosyaları</h1>
-        <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-xs)' }}>
-          Hukuk büronuza devredilmiş tüm icra dosyalarını yönetin ve hukuki işlem kayıtlarını girin.
-        </p>
+        <div className="page-header-row">
+          <div>
+            <h1 className="heading-md">İcra Takip Dosyaları</h1>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Hukuk büronuza devredilmiş tüm icra dosyalarını yönetin ve hukuki işlem kayıtlarını girin.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="page-body">
-        {/* Filters */}
-        <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-xl)', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ flex: 1, minWidth: 200 }}>
+      {/* Filter Bar */}
+      <div className="card" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div style={{ flex: 1, minWidth: 240 }}>
             <input
               type="text"
               className="form-input"
-              placeholder="Borçlu sakin veya site adı ara..."
+              placeholder="🔍 Borçlu sakin veya site adı ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div style={{ width: 180 }}>
+          <div style={{ width: 200 }}>
             <select
               className="form-input"
               value={statusFilter}
@@ -111,60 +115,60 @@ export default function LawyerDashboard() {
             </select>
           </div>
         </div>
-
-        {filteredCases.length === 0 ? (
-          <div className="empty-state">
-            <div className="icon">⚖️</div>
-            <h3>İcra Dosyası Bulunamadı</h3>
-            <p>Hukuk büronuza yönlendirilmiş aktif icra takip kaydı bulunmamaktadır.</p>
-          </div>
-        ) : (
-          <div className="table-wrapper animate-fade-in">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Borçlu Sakin / Site</th>
-                  <th>TC Kimlik No</th>
-                  <th>Devir Tarihi</th>
-                  <th>Asıl Borç</th>
-                  <th>Gecikme Faizi</th>
-                  <th>Toplam Borç</th>
-                  <th>Dosya Durumu</th>
-                  <th>İşlem</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCases.map((c) => {
-                  const totalDebt = Number(c.total_debt) + Number(c.total_late_fee);
-                  return (
-                    <tr key={c.id}>
-                      <td>
-                        <div style={{ fontWeight: 600 }}>{c.residents?.full_name || 'Tanımsız'}</div>
-                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                          🏢 {c.sites?.name || '-'}
-                        </div>
-                      </td>
-                      <td>{c.residents?.tc_no || '-'}</td>
-                      <td className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
-                        {formatDateTime(c.referred_at)}
-                      </td>
-                      <td>{formatCurrency(c.total_debt)}</td>
-                      <td style={{ color: 'var(--warning-light)' }}>+{formatCurrency(c.total_late_fee)}</td>
-                      <td style={{ fontWeight: 700, color: 'var(--error-light)' }}>{formatCurrency(totalDebt)}</td>
-                      <td>{getStatusBadge(c.status)}</td>
-                      <td>
-                        <a href={`/avukat/${c.id}`} className="btn btn-primary btn-sm">
-                          Yönet ➔
-                        </a>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
       </div>
+
+      {filteredCases.length === 0 ? (
+        <div className="empty-state">
+          <div className="icon">⚖️</div>
+          <h3>İcra Dosyası Bulunamadı</h3>
+          <p>Hukuk büronuza yönlendirilmiş aktif icra takip kaydı bulunmamaktadır.</p>
+        </div>
+      ) : (
+        <div className="table-wrapper">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Borçlu Sakin / Site</th>
+                <th>TC Kimlik No</th>
+                <th>Devir Tarihi</th>
+                <th>Asıl Borç</th>
+                <th>Gecikme Faizi</th>
+                <th>Toplam Borç</th>
+                <th>Dosya Durumu</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredCases.map((c) => {
+                const totalDebt = Number(c.total_debt) + Number(c.total_late_fee);
+                return (
+                  <tr key={c.id}>
+                    <td>
+                      <div style={{ fontWeight: 600 }}>{c.residents?.full_name || 'Tanımsız'}</div>
+                      <div className="text-xs" style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>
+                        🏢 {c.sites?.name || '-'}
+                      </div>
+                    </td>
+                    <td>{c.residents?.tc_no || '-'}</td>
+                    <td className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                      {formatDateTime(c.referred_at)}
+                    </td>
+                    <td>{formatCurrency(c.total_debt)}</td>
+                    <td style={{ color: 'var(--warning-text)' }}>+{formatCurrency(c.total_late_fee)}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--error)' }}>{formatCurrency(totalDebt)}</td>
+                    <td>{getStatusBadge(c.status)}</td>
+                    <td>
+                      <a href={`/avukat/${c.id}`} className="btn btn-primary btn-sm">
+                        İncele & Güncelle ➔
+                      </a>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 }

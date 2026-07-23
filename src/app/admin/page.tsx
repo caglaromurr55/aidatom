@@ -77,10 +77,10 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="page-body">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-lg)' }}>
+      <div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="skeleton" style={{ height: 120, borderRadius: 'var(--radius-xl)' }}></div>
+            <div key={i} className="card" style={{ height: 110, backgroundColor: 'var(--bg-secondary)', opacity: 0.6 }}></div>
           ))}
         </div>
       </div>
@@ -88,78 +88,87 @@ export default function AdminDashboard() {
   }
 
   const statCards = [
-    { label: 'Üye Yöneticiler', value: stats.managersCount, color: 'var(--primary-400)', icon: '👥' },
-    { label: 'Toplam Site', value: stats.sitesCount, color: 'var(--accent)', icon: '🏢' },
-    { label: 'İcradaki Borç', value: formatCurrency(stats.totalLegalDebt), color: 'var(--error)', icon: '⚖️' },
-    { label: 'Tahsil Edilen', value: formatCurrency(stats.totalLegalCollected), color: 'var(--success)', icon: '💵' },
-    { label: 'İcra Başarı Oranı', value: `%${stats.legalRate}`, color: 'var(--success-light)', icon: '📈' },
+    { label: 'Üye Yöneticiler', value: stats.managersCount, color: 'var(--color-navy)', icon: '👥' },
+    { label: 'Toplam Site', value: stats.sitesCount, color: 'var(--color-teal)', icon: '🏢' },
+    { label: 'İcradaki Toplam Borç', value: formatCurrency(stats.totalLegalDebt), color: 'var(--error)', icon: '⚖️' },
+    { label: 'Tahsil Edilen Tutar', value: formatCurrency(stats.totalLegalCollected), color: 'var(--success)', icon: '💵' },
+    { label: 'İcra Başarı Oranı', value: `%${stats.legalRate}`, color: 'var(--info)', icon: '📈' },
   ];
 
   return (
     <>
       <div className="page-header">
-        <h1 className="heading-sm">Süper Admin (Patron) Özet Paneli</h1>
-        <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-xs)' }}>
-          Platform genelindeki toplam üyelik, site ve icra tahsilat hacimlerini takip edin.
-        </p>
+        <div className="page-header-row">
+          <div>
+            <h1 className="heading-md">Platform Genel Bakış (Süper Admin)</h1>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Aidatom platformundaki tüm aktif sitelerin, üyelerin ve hukuki operasyonların genel özeti.
+            </p>
+          </div>
+          <div>
+            <a href="/admin/kullanicilar" className="btn btn-navy btn-sm">
+              👥 Tüm Kullanıcı Listesi
+            </a>
+          </div>
+        </div>
       </div>
 
-      <div className="page-body">
-        {/* Stats Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-lg)', marginBottom: 'var(--space-2xl)' }}>
-          {statCards.map((stat, i) => (
-            <div key={i} className="stat-card animate-fade-in-up" style={{ animationDelay: `${i * 80}ms`, animationFillMode: 'both' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '1.5rem' }}>{stat.icon}</span>
-                <span className="stat-value" style={{ color: stat.color, fontSize: '1.5rem' }}>{stat.value}</span>
-              </div>
-              <span className="stat-label">{stat.label}</span>
+      {/* Stat Grid */}
+      <div className="stat-grid">
+        {statCards.map((stat, i) => (
+          <div key={i} className="stat-card">
+            <div className="stat-card-top">
+              <div className="stat-icon">{stat.icon}</div>
+              <span className="stat-value" style={{ color: stat.color, fontSize: typeof stat.value === 'string' && stat.value.length > 8 ? '1.35rem' : '1.75rem' }}>
+                {stat.value}
+              </span>
             </div>
-          ))}
-        </div>
+            <span className="stat-label">{stat.label}</span>
+          </div>
+        ))}
+      </div>
 
-        {/* Recent Referral Cases */}
-        <div className="card animate-fade-in">
-          <h2 className="heading-sm" style={{ fontSize: '1.125rem', marginBottom: 'var(--space-lg)' }}>⚖️ Son İcraya Devredilen Dosyalar</h2>
-          {recentCases.length === 0 ? (
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Henüz icraya devredilmiş bir dosya bulunmuyor.</p>
-          ) : (
-            <div className="table-wrapper">
-              <table className="table" style={{ fontSize: '0.875rem' }}>
-                <thead>
-                  <tr>
-                    <th>Sakin</th>
-                    <th>Site</th>
-                    <th>Devredilen Borç</th>
-                    <th>Devir Tarihi</th>
-                    <th>Durum</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {recentCases.map((c) => {
-                    const total = Number(c.total_debt) + Number(c.total_late_fee);
-                    return (
-                      <tr key={c.id}>
-                        <td style={{ fontWeight: 600 }}>{c.residents?.full_name || 'Tanımsız'}</td>
-                        <td>{c.sites?.name || '-'}</td>
-                        <td style={{ fontWeight: 700, color: 'var(--error-light)' }}>{formatCurrency(total)}</td>
-                        <td>{new Date(c.referred_at).toLocaleDateString('tr-TR')}</td>
-                        <td>
-                          <span className={`badge ${
-                            c.status === 'collected' ? 'badge-success' :
-                            c.status === 'pending' ? 'badge-warning' : 'badge-primary'
-                          }`}>
-                            {c.status === 'pending' ? 'Yeni / İşlemsiz' : c.status === 'collected' ? 'Tahsil Edildi' : 'İşlemde'}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+      {/* Recent Legal Handovers */}
+      <div className="card">
+        <h2 className="heading-sm" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>⚖️</span> Hukuk Departmanına Devredilen Son Dosyalar
+        </h2>
+
+        {recentCases.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Henüz hukuka devredilmiş bir icra dosyası bulunmamaktadır.</p>
+        ) : (
+          <div className="table-wrapper">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>Borçlu Sakin</th>
+                  <th>Bağlı Site</th>
+                  <th>Toplam Borç Tutar</th>
+                  <th>Devir Tarihi</th>
+                  <th>Durum</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentCases.map((c) => {
+                  const totalDebt = Number(c.total_debt) + Number(c.total_late_fee);
+                  return (
+                    <tr key={c.id}>
+                      <td style={{ fontWeight: 600 }}>{c.residents?.full_name || 'Tanımsız'}</td>
+                      <td>🏢 {c.sites?.name || '-'}</td>
+                      <td style={{ fontWeight: 700, color: 'var(--error)' }}>{formatCurrency(totalDebt)}</td>
+                      <td className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                        {new Date(c.referred_at).toLocaleDateString('tr-TR')}
+                      </td>
+                      <td>
+                        <span className="badge badge-warning">{c.status}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </>
   );

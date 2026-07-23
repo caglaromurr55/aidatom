@@ -130,10 +130,10 @@ export default function YoneticiDashboard() {
 
   if (loading) {
     return (
-      <div className="page-body">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-lg)' }}>
+      <div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="skeleton" style={{ height: 120, borderRadius: 'var(--radius-xl)' }}></div>
+            <div key={i} className="card" style={{ height: 110, backgroundColor: 'var(--bg-secondary)', opacity: 0.6 }}></div>
           ))}
         </div>
       </div>
@@ -141,8 +141,8 @@ export default function YoneticiDashboard() {
   }
 
   const cards = [
-    { label: 'Yönetilen Siteler', value: stats.sitesCount, color: 'var(--primary-400)', icon: '🏢' },
-    { label: 'Toplam Daire', value: stats.unitsCount, color: 'var(--accent)', icon: '🔑' },
+    { label: 'Yönetilen Siteler', value: stats.sitesCount, color: 'var(--color-navy)', icon: '🏢' },
+    { label: 'Toplam Daire', value: stats.unitsCount, color: 'var(--color-teal)', icon: '🔑' },
     { label: 'Aktif Sakin', value: stats.residentsCount, color: 'var(--success)', icon: '👥' },
     { label: 'İcradaki Dosya', value: stats.legalCount, color: 'var(--error)', icon: '⚖️' },
   ];
@@ -150,77 +150,100 @@ export default function YoneticiDashboard() {
   return (
     <>
       <div className="page-header">
-        <h1 className="heading-sm">Yönetici Özet Paneli</h1>
-        <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-xs)' }}>
-          Sitelerinizin genel durumunu ve finansal özetini buradan takip edin.
-        </p>
+        <div className="page-header-row">
+          <div>
+            <h1 className="heading-md">Yönetici Operasyon Paneli</h1>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Sitelerinizin genel durumunu ve finansal özetini buradan takip edin.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <a href="/yonetici/siteler" className="btn btn-primary btn-sm">
+              + Yeni Site Ekle
+            </a>
+          </div>
+        </div>
       </div>
 
-      <div className="page-body">
-        {/* Stats Row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 'var(--space-lg)', marginBottom: 'var(--space-2xl)' }}>
-          {cards.map((card, i) => (
-            <div key={i} className="stat-card animate-fade-in-up" style={{ animationDelay: `${i * 80}ms`, animationFillMode: 'both' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '1.5rem' }}>{card.icon}</span>
-                <span className="stat-value" style={{ color: card.color }}>{card.value}</span>
-              </div>
-              <span className="stat-label">{card.label}</span>
+      {/* Stat Grid */}
+      <div className="stat-grid">
+        {cards.map((card, i) => (
+          <div key={i} className="stat-card">
+            <div className="stat-card-top">
+              <div className="stat-icon">{card.icon}</div>
+              <span className="stat-value" style={{ color: card.color }}>{card.value}</span>
             </div>
-          ))}
-        </div>
-
-        {/* Financial Highlights */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 'var(--space-xl)', marginBottom: 'var(--space-2xl)' }}>
-          <div className="card">
-            <h2 className="heading-sm" style={{ marginBottom: 'var(--space-lg)' }}>💰 Finansal Durum</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-primary)', paddingBottom: 'var(--space-sm)' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Toplam Tahakkuk</span>
-                <span style={{ fontWeight: 600 }}>{formatCurrency(stats.totalDebt)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-primary)', paddingBottom: 'var(--space-sm)' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Tahsil Edilen</span>
-                <span style={{ fontWeight: 600, color: 'var(--success-light)' }}>{formatCurrency(stats.collectedAmount)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: 'var(--space-sm)' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Geciken Alacak</span>
-                <span style={{ fontWeight: 600, color: 'var(--error-light)' }}>{formatCurrency(stats.overdueAmount)}</span>
-              </div>
-            </div>
+            <span className="stat-label">{card.label}</span>
           </div>
+        ))}
+      </div>
 
-          <div className="card">
-            <h2 className="heading-sm" style={{ marginBottom: 'var(--space-lg)' }}>⚡ Hızlı Kısayollar</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-md)' }}>
-              <a href="/yonetici/siteler" className="btn btn-secondary btn-sm" style={{ height: 'fit-content' }}>🏢 Site Ekle</a>
-              <a href="/yonetici/alacaklar" className="btn btn-secondary btn-sm" style={{ height: 'fit-content' }}>💰 Aidat Gir</a>
-              <a href="/yonetici/excel-yukle" className="btn btn-secondary btn-sm" style={{ height: 'fit-content' }}>📋 Excel Yükle</a>
-              <a href="/yonetici/icraya-devret" className="btn btn-secondary btn-sm" style={{ height: 'fit-content' }}>⚖️ İcraya Ver</a>
-            </div>
-          </div>
-        </div>
-
-        {/* Recent Activity */}
+      {/* Financial Overview & Quick Shortcuts */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         <div className="card">
-          <h2 className="heading-sm" style={{ marginBottom: 'var(--space-lg)' }}>📝 Son İşlemler (Loglar)</h2>
-          {recentAuditLogs.length === 0 ? (
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Henüz bir işlem kaydı bulunmuyor.</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-              {recentAuditLogs.map((log) => (
-                <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-primary)', paddingBottom: 'var(--space-sm)', fontSize: '0.9375rem' }}>
-                  <div>
-                    <span style={{ fontWeight: 600 }}>{log.action}</span> &bull; {log.entity_type}
-                  </div>
-                  <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                    {new Date(log.created_at).toLocaleString('tr-TR')}
-                  </span>
-                </div>
-              ))}
+          <h2 className="heading-sm" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>💰</span> Finansal Özet
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-primary)', paddingBottom: '0.75rem' }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem' }}>Toplam Tahakkuk</span>
+              <span style={{ fontWeight: 700, fontFamily: 'var(--font-display)' }}>{formatCurrency(stats.totalDebt)}</span>
             </div>
-          )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-primary)', paddingBottom: '0.75rem' }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem' }}>Tahsil Edilen Tutarlar</span>
+              <span style={{ fontWeight: 700, color: 'var(--success)', fontFamily: 'var(--font-display)' }}>{formatCurrency(stats.collectedAmount)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '0.25rem' }}>
+              <span style={{ color: 'var(--text-secondary)', fontSize: '0.9375rem' }}>Geciken Borç Alacağı</span>
+              <span style={{ fontWeight: 700, color: 'var(--error)', fontFamily: 'var(--font-display)' }}>{formatCurrency(stats.overdueAmount)}</span>
+            </div>
+          </div>
         </div>
+
+        <div className="card">
+          <h2 className="heading-sm" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>⚡</span> Hızlı İşlem Kısayolları
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem' }}>
+            <a href="/yonetici/siteler" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>🏢 Site Yönetimi</a>
+            <a href="/yonetici/alacaklar" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>💰 Aidat & Alacak</a>
+            <a href="/yonetici/excel-yukle" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>📋 Excel Yükle</a>
+            <a href="/yonetici/icraya-devret" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>⚖️ İcraya Devret</a>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Audit Logs */}
+      <div className="card">
+        <h2 className="heading-sm" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span>📝</span> Son Sistem İşlem Kayıtları
+        </h2>
+        {recentAuditLogs.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Henüz bir işlem kaydı bulunmuyor.</p>
+        ) : (
+          <div className="table-wrapper">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>İşlem Detayı</th>
+                  <th>Varlık Tipi</th>
+                  <th>Tarih</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentAuditLogs.map((log) => (
+                  <tr key={log.id}>
+                    <td style={{ fontWeight: 600 }}>{log.action}</td>
+                    <td><span className="badge badge-neutral">{log.entity_type}</span></td>
+                    <td className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+                      {new Date(log.created_at).toLocaleString('tr-TR')}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </>
   );

@@ -39,10 +39,10 @@ export default function SistemDashboard() {
 
   if (loading) {
     return (
-      <div className="page-body">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-lg)' }}>
+      <div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="skeleton" style={{ height: 120, borderRadius: 'var(--radius-xl)' }}></div>
+            <div key={i} className="card" style={{ height: 110, backgroundColor: 'var(--bg-secondary)', opacity: 0.6 }}></div>
           ))}
         </div>
       </div>
@@ -50,72 +50,94 @@ export default function SistemDashboard() {
   }
 
   const statCards = [
-    { label: 'Onay Bekleyen', value: stats.pendingApprovals, color: 'var(--warning)', icon: '⏳' },
-    { label: 'Toplam Kullanıcı', value: stats.totalUsers, color: 'var(--primary-500)', icon: '👥' },
-    { label: 'Aktif Kullanıcı', value: stats.approvedUsers, color: 'var(--success)', icon: '✅' },
-    { label: 'Askıda', value: stats.suspendedUsers, color: 'var(--error)', icon: '🚫' },
-    { label: 'Yeni İletişim', value: stats.unreadContacts, color: 'var(--accent)', icon: '📞' },
+    { label: 'Onay Bekleyen Başvuru', value: stats.pendingApprovals, color: 'var(--warning)', icon: '⏳' },
+    { label: 'Toplam Kayıtlı Yönetici', value: stats.totalUsers, color: 'var(--color-navy)', icon: '👥' },
+    { label: 'Aktif Onaylı Kullanıcı', value: stats.approvedUsers, color: 'var(--success)', icon: '✅' },
+    { label: 'Askıya Alınanlar', value: stats.suspendedUsers, color: 'var(--error)', icon: '🚫' },
+    { label: 'Yeni İletişim Talebi', value: stats.unreadContacts, color: 'var(--color-teal)', icon: '📞' },
   ];
 
   return (
     <>
       <div className="page-header">
-        <h1 className="heading-sm">Sistem Yönetimi</h1>
-        <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-xs)' }}>
-          Kullanıcı başvurularını yönetin ve sistem durumunu takip edin.
-        </p>
+        <div className="page-header-row">
+          <div>
+            <h1 className="heading-md">Sistem Operasyon Paneli</h1>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
+              Kullanıcı başvurularını inceleyin, evrak onaylarını verin ve platform durumunu takip edin.
+            </p>
+          </div>
+          <div>
+            <a href="/sistem/evrak-kontrol" className="btn btn-primary btn-sm">
+              📋 Onay Bekleyen Evraklar ({stats.pendingApprovals})
+            </a>
+          </div>
+        </div>
       </div>
-      <div className="page-body">
-        {/* Stats Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-lg)', marginBottom: 'var(--space-2xl)' }}>
-          {statCards.map((stat, i) => (
-            <div key={i} className="stat-card animate-fade-in-up" style={{ animationDelay: `${i * 80}ms`, animationFillMode: 'both' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '1.5rem' }}>{stat.icon}</span>
-                <span className="stat-value" style={{ color: stat.color }}>{stat.value}</span>
-              </div>
-              <span className="stat-label">{stat.label}</span>
-            </div>
-          ))}
-        </div>
 
-        {/* Quick Actions */}
-        <h2 className="heading-sm" style={{ marginBottom: 'var(--space-lg)' }}>Hızlı İşlemler</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 'var(--space-lg)' }}>
-          <a href="/sistem/evrak-kontrol" className="card card-hover" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-              <span style={{ fontSize: '1.5rem' }}>📋</span>
-              <div>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Evrak Kontrol</h3>
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {stats.pendingApprovals} başvuru bekliyor
-                </p>
-              </div>
+      {/* Stat Grid */}
+      <div className="stat-grid">
+        {statCards.map((stat, i) => (
+          <div key={i} className="stat-card">
+            <div className="stat-card-top">
+              <div className="stat-icon">{stat.icon}</div>
+              <span className="stat-value" style={{ color: stat.color }}>{stat.value}</span>
             </div>
-          </a>
-          <a href="/sistem/kullanicilar" className="card card-hover" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-              <span style={{ fontSize: '1.5rem' }}>👥</span>
-              <div>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>Kullanıcılar</h3>
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  Tüm kullanıcıları yönet
-                </p>
-              </div>
+            <span className="stat-label">{stat.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick Navigation Cards */}
+      <h2 className="heading-sm" style={{ marginBottom: '1.25rem' }}>Yönetim Alanları</h2>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+        <a href="/sistem/evrak-kontrol" className="card card-hover" style={{ textDecoration: 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="stat-icon" style={{ backgroundColor: 'var(--warning-bg)', color: 'var(--warning-text)' }}>📋</div>
+            <div>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Evrak Kontrol & Onay</h3>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>
+                {stats.pendingApprovals} yeni yönetici başvurusu onay bekliyor
+              </p>
             </div>
-          </a>
-          <a href="/sistem/iletisim-talepleri" className="card card-hover" style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-              <span style={{ fontSize: '1.5rem' }}>📞</span>
-              <div>
-                <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>İletişim Talepleri</h3>
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                  {stats.unreadContacts} okunmamış talep
-                </p>
-              </div>
+          </div>
+        </a>
+
+        <a href="/sistem/kullanicilar" className="card card-hover" style={{ textDecoration: 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="stat-icon" style={{ backgroundColor: 'var(--info-bg)', color: 'var(--info-text)' }}>👥</div>
+            <div>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Kullanıcı Yönetimi</h3>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>
+                Sistemdeki {stats.totalUsers} yöneticinin durumunu yönetin
+              </p>
             </div>
-          </a>
-        </div>
+          </div>
+        </a>
+
+        <a href="/sistem/iletisim-talepleri" className="card card-hover" style={{ textDecoration: 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="stat-icon" style={{ backgroundColor: 'var(--success-bg)', color: 'var(--success-text)' }}>📞</div>
+            <div>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>İletişim & Ön Analiz Talepleri</h3>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>
+                {stats.unreadContacts} yeni arama/bilgi talebi mevcut
+              </p>
+            </div>
+          </div>
+        </a>
+
+        <a href="/sistem/devirler" className="card card-hover" style={{ textDecoration: 'none' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="stat-icon" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--color-navy)' }}>🔄</div>
+            <div>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Yönetici Devir Onayları</h3>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>
+                Siteler arası yönetici devir taleplerini onaylayın
+              </p>
+            </div>
+          </div>
+        </a>
       </div>
     </>
   );

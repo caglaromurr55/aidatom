@@ -54,10 +54,10 @@ export default function YoneticiLayout({
       ],
     },
     {
-      section: 'Finansal',
+      section: 'Finansal Operasyon',
       items: [
         { href: '/yonetici/alacaklar', label: 'Aidat & Alacaklar', icon: '💰' },
-        { href: '/yonetici/gelir-gider', label: 'Gelir / Gider', icon: '💸' },
+        { href: '/yonetici/gelir-gider', label: 'Kasa (Gelir / Gider)', icon: '💸' },
         { href: '/yonetici/excel-yukle', label: 'Excel Veri Yükleme', icon: '📋' },
       ],
     },
@@ -65,8 +65,8 @@ export default function YoneticiLayout({
       section: 'Hukuk & İletişim',
       items: [
         { href: '/yonetici/icraya-devret', label: 'İcraya Devret', icon: '⚖️' },
-        { href: '/yonetici/sms', label: 'SMS Gönderimi', icon: '📱' },
-        { href: '/yonetici/raporlar', label: 'Raporlar', icon: '📈' },
+        { href: '/yonetici/sms', label: 'SMS Hatırlatma', icon: '📱' },
+        { href: '/yonetici/raporlar', label: 'Raporlar & Analiz', icon: '📈' },
       ],
     },
   ];
@@ -76,7 +76,12 @@ export default function YoneticiLayout({
       {/* Sidebar Overlay (Mobile) */}
       {sidebarOpen && (
         <div
-          className="sidebar-overlay active"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 31, 61, 0.4)',
+            zIndex: 99,
+          }}
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -84,11 +89,11 @@ export default function YoneticiLayout({
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
-          <a href="/yonetici" style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', fontFamily: 'var(--font-display)', fontSize: '1.25rem', fontWeight: 800 }}>
-            <div style={{ width: 32, height: 32, background: 'var(--gradient-primary)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', color: '#fff' }}>A</div>
-            <span><span className="text-gradient">Aidat</span>om</span>
+          <a href="/yonetici" className="sidebar-logo">
+            <span className="logo-teal">AİDAT</span>
+            <span className="logo-white">OM</span>
           </a>
-          <div className="text-xs" style={{ color: 'var(--text-tertiary)', marginTop: 'var(--space-xs)' }}>
+          <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
             {profile?.manager_type === 'company' ? 'Profesyonel Yönetim Şirketi' : 'Site Yöneticisi'}
           </div>
         </div>
@@ -98,7 +103,7 @@ export default function YoneticiLayout({
             <div key={section.section}>
               <div className="sidebar-section-title">{section.section}</div>
               {section.items.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                const isActive = pathname === item.href || (item.href !== '/yonetici' && pathname.startsWith(item.href));
                 return (
                   <a
                     key={item.href}
@@ -106,8 +111,10 @@ export default function YoneticiLayout({
                     className={`sidebar-link ${isActive ? 'active' : ''}`}
                     onClick={() => setSidebarOpen(false)}
                   >
-                    <span className="icon">{item.icon}</span>
-                    <span style={{ flex: 1 }}>{item.label}</span>
+                    <div className="sidebar-link-inner">
+                      <span>{item.icon}</span>
+                      <span>{item.label}</span>
+                    </div>
                   </a>
                 );
               })}
@@ -116,60 +123,57 @@ export default function YoneticiLayout({
         </nav>
 
         <div className="sidebar-footer">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)', padding: 'var(--space-sm)', marginBottom: 'var(--space-sm)' }}>
-            <div style={{ 
-              width: 36, height: 36, borderRadius: '50%', 
-              background: 'var(--gradient-primary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '0.875rem', fontWeight: 700, color: '#fff',
-              flexShrink: 0,
-            }}>
+          <div className="sidebar-user">
+            <div className="sidebar-user-avatar">
               {profile?.full_name?.charAt(0) || 'Y'}
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="text-sm" style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {profile?.full_name || 'Yönetici'}
-              </div>
-              <div className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
-                {profile?.company_name || (profile?.phone ? `+${profile.phone}` : '')}
-              </div>
+            <div className="sidebar-user-info">
+              <span className="sidebar-user-name">{profile?.full_name || 'Yönetici'}</span>
+              <span className="sidebar-user-role">{profile?.company_name || profile?.phone || 'Site Yöneticisi'}</span>
             </div>
           </div>
-          <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ width: '100%' }}>
-            🚪 Çıkış Yap
+          <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }} title="Çıkış Yap">
+            🚪
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="main-content">
-        {/* Top Bar */}
-        <div style={{
-          padding: 'var(--space-md) var(--space-xl)',
-          borderBottom: '1px solid var(--border-primary)',
-          background: 'var(--bg-secondary)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
+      {/* Main Wrapper */}
+      <div className="main-wrapper">
+        {/* Topbar Header */}
+        <header className="topbar">
           <button
-            className="mobile-menu-btn"
+            className="topbar-mobile-toggle"
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Menü"
           >
             ☰
           </button>
-          <div style={{ flex: 1 }}></div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-            <button className="btn btn-icon btn-ghost" style={{ position: 'relative' }}>
-              🔔
-              {unreadNotifs > 0 && <span className="notification-dot"></span>}
-            </button>
-          </div>
-        </div>
 
-        {children}
-      </main>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Operasyon Merkezi</span>
+          </div>
+
+          <div className="topbar-right">
+            <button className="topbar-icon-btn" title="Bildirimler">
+              🔔
+              {unreadNotifs > 0 && <span className="topbar-badge-count">{unreadNotifs}</span>}
+            </button>
+            <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--border-primary)' }}></div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {profile?.full_name || 'Yönetici'}
+              </span>
+              <span className="badge badge-primary">Aktif</span>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="page-container">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
