@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/types';
+import { Scale, LogOut, Menu } from 'lucide-react';
 
 export default function AvukatLayout({
   children,
@@ -40,7 +41,7 @@ export default function AvukatLayout({
     {
       section: 'Hukuk Operasyonu',
       items: [
-        { href: '/avukat', label: 'İcra Takip Listesi', icon: '⚖️' },
+        { href: '/avukat', label: 'İcra Takip Listesi', icon: Scale },
       ],
     },
   ];
@@ -77,6 +78,7 @@ export default function AvukatLayout({
             <div key={section.section}>
               <div className="sidebar-section-title">{section.section}</div>
               {section.items.map((item) => {
+                const IconComponent = item.icon;
                 const isActive = pathname === item.href || (item.href !== '/avukat' && pathname.startsWith(item.href));
                 return (
                   <a
@@ -86,7 +88,7 @@ export default function AvukatLayout({
                     onClick={() => setSidebarOpen(false)}
                   >
                     <div className="sidebar-link-inner">
-                      <span>{item.icon}</span>
+                      <IconComponent size={18} />
                       <span>{item.label}</span>
                     </div>
                   </a>
@@ -107,7 +109,7 @@ export default function AvukatLayout({
             </div>
           </div>
           <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }} title="Çıkış Yap">
-            🚪
+            <LogOut size={18} />
           </button>
         </div>
       </aside>
@@ -120,7 +122,7 @@ export default function AvukatLayout({
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Menü"
           >
-            ☰
+            <Menu size={22} />
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

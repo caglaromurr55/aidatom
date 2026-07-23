@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE, DOCUMENT_LABELS } from '@/lib/utils';
 import type { Document, DocumentType, ManagerType } from '@/types';
+import { CheckCircle2, FileText, XCircle, Paperclip, Download } from 'lucide-react';
 
 /* ── Document Upload Config ── */
 interface DocConfig {
@@ -373,8 +374,16 @@ export default function DocumentUploadPage() {
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 'var(--space-md)', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1, minWidth: 200 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)', marginBottom: 'var(--space-xs)' }}>
-                        <span style={{ fontSize: '1.25rem' }}>
-                          {isApproved ? '✅' : isUploaded ? '📄' : isRejected ? '❌' : '📎'}
+                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                          {isApproved ? (
+                            <CheckCircle2 size={20} style={{ color: 'var(--success)' }} />
+                          ) : isUploaded ? (
+                            <FileText size={20} style={{ color: 'var(--color-teal)' }} />
+                          ) : isRejected ? (
+                            <XCircle size={20} style={{ color: 'var(--error)' }} />
+                          ) : (
+                            <Paperclip size={20} style={{ color: 'var(--text-tertiary)' }} />
+                          )}
                         </span>
                         <h3 style={{ fontSize: '1rem', fontWeight: 600 }}>{docConfig.label}</h3>
                         {isUploaded && !isRejected && (
@@ -418,10 +427,10 @@ export default function DocumentUploadPage() {
                         <button
                           type="button"
                           className="btn btn-ghost btn-sm"
-                          style={{ marginTop: 'var(--space-sm)', color: 'var(--primary-400)' }}
+                          style={{ marginTop: 'var(--space-sm)', color: 'var(--color-teal)' }}
                           onClick={() => downloadTemplate(docConfig.type)}
                         >
-                          ⬇ {docConfig.downloadLabel}
+                          <Download size={14} /> {docConfig.downloadLabel}
                         </button>
                       )}
                     </div>

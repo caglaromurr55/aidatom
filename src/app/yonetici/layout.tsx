@@ -4,6 +4,19 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/types';
+import { 
+  BarChart3, 
+  Building2, 
+  Wallet, 
+  CreditCard, 
+  FileSpreadsheet, 
+  Scale, 
+  MessageSquare, 
+  TrendingUp, 
+  Bell, 
+  LogOut,
+  Menu
+} from 'lucide-react';
 
 export default function YoneticiLayout({
   children,
@@ -49,24 +62,24 @@ export default function YoneticiLayout({
     {
       section: 'Genel',
       items: [
-        { href: '/yonetici', label: 'Özet Panel', icon: '📊' },
-        { href: '/yonetici/siteler', label: 'Site / Apartman', icon: '🏢' },
+        { href: '/yonetici', label: 'Özet Panel', icon: BarChart3 },
+        { href: '/yonetici/siteler', label: 'Site / Apartman', icon: Building2 },
       ],
     },
     {
       section: 'Finansal Operasyon',
       items: [
-        { href: '/yonetici/alacaklar', label: 'Aidat & Alacaklar', icon: '💰' },
-        { href: '/yonetici/gelir-gider', label: 'Kasa (Gelir / Gider)', icon: '💸' },
-        { href: '/yonetici/excel-yukle', label: 'Excel Veri Yükleme', icon: '📋' },
+        { href: '/yonetici/alacaklar', label: 'Aidat & Alacaklar', icon: Wallet },
+        { href: '/yonetici/gelir-gider', label: 'Kasa (Gelir / Gider)', icon: CreditCard },
+        { href: '/yonetici/excel-yukle', label: 'Excel Veri Yükleme', icon: FileSpreadsheet },
       ],
     },
     {
       section: 'Hukuk & İletişim',
       items: [
-        { href: '/yonetici/icraya-devret', label: 'İcraya Devret', icon: '⚖️' },
-        { href: '/yonetici/sms', label: 'SMS Hatırlatma', icon: '📱' },
-        { href: '/yonetici/raporlar', label: 'Raporlar & Analiz', icon: '📈' },
+        { href: '/yonetici/icraya-devret', label: 'İcraya Devret', icon: Scale },
+        { href: '/yonetici/sms', label: 'SMS Hatırlatma', icon: MessageSquare },
+        { href: '/yonetici/raporlar', label: 'Raporlar & Analiz', icon: TrendingUp },
       ],
     },
   ];
@@ -103,6 +116,7 @@ export default function YoneticiLayout({
             <div key={section.section}>
               <div className="sidebar-section-title">{section.section}</div>
               {section.items.map((item) => {
+                const IconComponent = item.icon;
                 const isActive = pathname === item.href || (item.href !== '/yonetici' && pathname.startsWith(item.href));
                 return (
                   <a
@@ -112,7 +126,7 @@ export default function YoneticiLayout({
                     onClick={() => setSidebarOpen(false)}
                   >
                     <div className="sidebar-link-inner">
-                      <span>{item.icon}</span>
+                      <IconComponent size={18} />
                       <span>{item.label}</span>
                     </div>
                   </a>
@@ -133,7 +147,7 @@ export default function YoneticiLayout({
             </div>
           </div>
           <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }} title="Çıkış Yap">
-            🚪
+            <LogOut size={18} />
           </button>
         </div>
       </aside>
@@ -147,7 +161,7 @@ export default function YoneticiLayout({
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Menü"
           >
-            ☰
+            <Menu size={22} />
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -156,7 +170,7 @@ export default function YoneticiLayout({
 
           <div className="topbar-right">
             <button className="topbar-icon-btn" title="Bildirimler">
-              🔔
+              <Bell size={18} />
               {unreadNotifs > 0 && <span className="topbar-badge-count">{unreadNotifs}</span>}
             </button>
             <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--border-primary)' }}></div>

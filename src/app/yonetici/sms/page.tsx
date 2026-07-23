@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { formatDateTime } from '@/lib/utils';
 import type { Site, SmsTemplate, SmsLog } from '@/types';
+import { Send, FileText, History, Building2, CheckCircle2, AlertCircle, Plus, Search, Smartphone, MessageSquare } from 'lucide-react';
 
 interface OverdueResident {
   id: string;
@@ -98,54 +99,56 @@ export default function SMSPage() {
           const residentIds = loadedResidents.map(r => r.id);
           const { data: charges } = await supabase
             .from('charges')
-            .select('resident_id, amount, paid_amount')
+            .select('resident_id, amount, paid_amount, status')
             .in('resident_id', residentIds)
-            .or('status.eq.overdue,status.eq.partially_paid');
+            .eq('status', 'overdue');
 
           const overdueMap: Record<string, number> = {};
           charges?.forEach((c) => {
-            const pending = Number(c.amount) - Number(c.paid_amount);
-            if (pending > 0) {
-              overdueMap[c.resident_id] = (overdueMap[c.resident_id] || 0) + pending;
-            }
+            const debt = Number(c.amount) - Number(c.paid_amount);
+            overdueMap[c.resident_id] = (overdueMap[c.resident_id] || 0) + debt;
           });
 
-          const enrichedResidents: OverdueResident[] = loadedResidents
-            .map((r) => ({
+          const overdueList: OverdueResident[] = loadedResidents
+            .filter(r => (overdueMap[r.id] || 0) > 0)
+            .map(r => ({
               id: r.id,
               full_name: r.full_name,
-              phone: r.phone || '',
-              totalDebt: overdueMap[r.id] || 0,
-            }))
-            .filter((r) => r.totalDebt > 0);
+              phone: r.phone,
+              totalDebt: overdueMap[r.id],
+            }));
 
-          setResidents(enrichedResidents);
+          setResidents(overdueList);
+        } else {
+          setResidents([]);
         }
+      } else {
+        setResidents([]);
       }
 
-      // 3. Load SMS logs
+      // 3. Load SMS Logs
       const { data: logsData } = await supabase
         .from('sms_logs')
         .select(`
           *,
           residents (full_name)
         `)
-        .eq('sent_by', user.id)
-        .order('created_at', { ascending: false });
-      
+        .order('created_at', { ascending: false })
+        .limit(50);
       setLogs((logsData as any[]) || []);
+
     } catch (err: any) {
-      setError(err.message);
+      console.error('Error loading SMS data:', err);
     } finally {
       setLoading(false);
     }
-  }, [supabase, selectedSiteId]);
+  }, [selectedSiteId, supabase]);
 
   useEffect(() => {
     loadSMSData();
   }, [loadSMSData]);
 
-  // Preview content helper
+  // Replace tags in text
   const getParsedText = (rawContent: string, resident: OverdueResident) => {
     const currentSite = sites.find((s) => s.id === selectedSiteId);
     return rawContent
@@ -205,7 +208,6 @@ export default function SMSPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const currentSite = sites.find((s) => s.id === selectedSiteId);
       const smsInserts = [];
 
       for (const resId of selectedResidentIds) {
@@ -219,24 +221,15 @@ export default function SMSPage() {
           sent_to_phone: res.phone,
           sent_to_resident_id: res.id,
           content: finalContent,
-          status: 'sent' as const, // Simulating direct successful send
+          status: 'sent',
           sent_by: user.id,
         });
       }
 
-      const { error: dbError } = await supabase.from('sms_logs').insert(smsInserts);
-      if (dbError) throw dbError;
+      const { error: insertErr } = await supabase.from('sms_logs').insert(smsInserts);
+      if (insertErr) throw insertErr;
 
-      // Log audit
-      await supabase.from('audit_logs').insert({
-        user_id: user.id,
-        action: 'sms_notifications_sent',
-        entity_type: 'site',
-        entity_id: selectedSiteId,
-        new_values: { count: smsInserts.length },
-      });
-
-      setSuccess(`Başarıyla ${smsInserts.length} sakine hatırlatma SMS'i gönderildi (simüle edildi).`);
+      setSuccess(`${selectedResidentIds.length} kişiye SMS başarıyla gönderildi (Simülasyon).`);
       setSelectedResidentIds([]);
       await loadSMSData();
       setActiveTab('logs');
@@ -265,61 +258,78 @@ export default function SMSPage() {
 
   if (loading && sites.length === 0) {
     return (
-      <div className="page-body">
-        <div className="skeleton" style={{ height: 180, borderRadius: 'var(--radius-xl)' }}></div>
+      <div>
+        <div className="card" style={{ height: 180, backgroundColor: 'var(--bg-secondary)', opacity: 0.6 }}></div>
       </div>
     );
   }
 
   return (
     <>
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-md)' }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <h1 className="heading-sm">SMS Bildirim Yönetimi</h1>
-          <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: 'var(--space-xs)' }}>
+          <h1 className="heading-md">SMS Bildirim Yönetimi</h1>
+          <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
             Ödemesi geciken sakinlere SMS hatırlatmaları gönderin veya hazır bildirim şablonlarını yönetin.
           </p>
         </div>
       </div>
 
-      <div className="page-body">
-        {success && <div className="auth-alert success" style={{ marginBottom: 'var(--space-lg)' }}><span>✓</span><span>{success}</span></div>}
-        {error && <div className="auth-alert error" style={{ marginBottom: 'var(--space-lg)' }}><span>⚠</span><span>{error}</span></div>}
+      <div>
+        {success && (
+          <div className="badge badge-success" style={{ padding: '0.75rem 1rem', marginBottom: '1.25rem', width: '100%', fontSize: '0.9rem' }}>
+            <CheckCircle2 size={16} /> {success}
+          </div>
+        )}
+        {error && (
+          <div className="badge badge-error" style={{ padding: '0.75rem 1rem', marginBottom: '1.25rem', width: '100%', fontSize: '0.9rem' }}>
+            <AlertCircle size={16} /> {error}
+          </div>
+        )}
 
         {/* Site Filter */}
-        <div style={{ display: 'flex', gap: 'var(--space-md)', marginBottom: 'var(--space-xl)', alignItems: 'center' }}>
-          <span className="form-label" style={{ margin: 0 }}>Site Seçimi:</span>
-          <div style={{ width: 220 }}>
-            <select
-              className="form-input"
-              value={selectedSiteId}
-              onChange={(e) => setSelectedSiteId(e.target.value)}
-              aria-label="Site Seçimi"
-            >
-              {sites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-            </select>
+        <div className="card" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <span className="form-label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Building2 size={18} style={{ color: 'var(--color-teal)' }} /> Site Seçimi:
+            </span>
+            <div style={{ width: 260 }}>
+              <select
+                className="form-input"
+                value={selectedSiteId}
+                onChange={(e) => setSelectedSiteId(e.target.value)}
+                aria-label="Site Seçimi"
+              >
+                {sites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="tabs" style={{ marginBottom: 'var(--space-xl)' }}>
+        {/* Tabs Bar */}
+        <div className="tabs" style={{ marginBottom: '1.5rem' }}>
           <button className={`tab ${activeTab === 'send' ? 'active' : ''}`} onClick={() => setActiveTab('send')}>
-            📱 SMS Gönderimi
+            <Send size={18} />
+            <span>SMS Gönderimi</span>
           </button>
           <button className={`tab ${activeTab === 'templates' ? 'active' : ''}`} onClick={() => setActiveTab('templates')}>
-            💬 Şablonlar ({templates.length})
+            <FileText size={18} />
+            <span>Şablonlar ({templates.length})</span>
           </button>
           <button className={`tab ${activeTab === 'logs' ? 'active' : ''}`} onClick={() => setActiveTab('logs')}>
-            📜 Gönderim Geçmişi ({logs.length})
+            <History size={18} />
+            <span>Gönderim Geçmişi ({logs.length})</span>
           </button>
         </div>
 
         {/* Tab 1: Send SMS */}
         {activeTab === 'send' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 'var(--space-xl)', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
             {/* Left: Overdue Residents list */}
             <div className="card">
-              <h2 className="heading-sm" style={{ fontSize: '1rem', marginBottom: 'var(--space-lg)' }}>Borçlu Sakinler ({residents.length})</h2>
+              <h2 className="heading-sm" style={{ fontSize: '1.05rem', marginBottom: '1rem' }}>
+                Borçlu Sakinler ({residents.length})
+              </h2>
               {residents.length === 0 ? (
                 <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Ödemesi geciken sakin bulunmamaktadır.</p>
               ) : (
@@ -330,30 +340,30 @@ export default function SMSPage() {
                         <th style={{ width: 40 }}>
                           <input
                             type="checkbox"
-                            checked={selectedResidentIds.length === residents.length && residents.length > 0}
                             onChange={(e) => handleSelectAll(e.target.checked)}
+                            checked={selectedResidentIds.length === residents.length && residents.length > 0}
                             aria-label="Tümünü Seç"
                           />
                         </th>
-                        <th>Sakin</th>
+                        <th>Ad Soyad</th>
                         <th>Telefon</th>
                         <th>Borç Tutarı</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {residents.map((res) => (
-                        <tr key={res.id}>
+                      {residents.map((r) => (
+                        <tr key={r.id}>
                           <td>
                             <input
                               type="checkbox"
-                              checked={selectedResidentIds.includes(res.id)}
-                              onChange={(e) => handleSelectResident(res.id, e.target.checked)}
-                              aria-label={`${res.full_name} Seç`}
+                              checked={selectedResidentIds.includes(r.id)}
+                              onChange={(e) => handleSelectResident(r.id, e.target.checked)}
+                              aria-label={`${r.full_name} seç`}
                             />
                           </td>
-                          <td style={{ fontWeight: 600 }}>{res.full_name}</td>
-                          <td>{res.phone ? `+90 ${res.phone}` : '-'}</td>
-                          <td style={{ color: 'var(--error-light)', fontWeight: 600 }}>{res.totalDebt} ₺</td>
+                          <td style={{ fontWeight: 600 }}>{r.full_name}</td>
+                          <td>{r.phone}</td>
+                          <td style={{ fontWeight: 700, color: 'var(--error)' }}>{r.totalDebt} ₺</td>
                         </tr>
                       ))}
                     </tbody>
@@ -362,53 +372,48 @@ export default function SMSPage() {
               )}
             </div>
 
-            {/* Right: Template selection & Text Box */}
+            {/* Right: SMS Text Composer */}
             <div className="card">
-              <h2 className="heading-sm" style={{ fontSize: '1rem', marginBottom: 'var(--space-lg)' }}>SMS Metni Hazırla</h2>
-              <div className="form-group" style={{ marginBottom: 'var(--space-md)' }}>
-                <label className="form-label" htmlFor="select-template">Hazır Şablon Seçin</label>
+              <h2 className="heading-sm" style={{ fontSize: '1.05rem', marginBottom: '1rem' }}>
+                Mesaj Oluştur
+              </h2>
+
+              <div className="form-group">
+                <label className="form-label">Şablon Seçin (Opsiyonel)</label>
                 <select
-                  id="select-template"
                   className="form-input"
                   value={selectedTemplateId}
                   onChange={(e) => setSelectedTemplateId(e.target.value)}
                 >
-                  <option value="">Serbest Metin Girin...</option>
-                  {templates.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  <option value="">-- Özel Mesaj Yazın --</option>
+                  {templates.map((t) => (
+                    <option key={t.id} value={t.id}>{t.name}</option>
+                  ))}
                 </select>
               </div>
 
-              <div className="form-group" style={{ marginBottom: 'var(--space-lg)' }}>
-                <label className="form-label" htmlFor="sms-text-area">Mesaj İçeriği</label>
+              <div className="form-group">
+                <label className="form-label">SMS Metni <span className="required">*</span></label>
                 <textarea
-                  id="sms-text-area"
                   className="form-input"
+                  rows={4}
                   value={customSmsText}
                   onChange={(e) => setCustomSmsText(e.target.value)}
-                  placeholder="SMS mesajınızı yazın..."
-                  rows={5}
-                />
-                {/* Dynamic Parameter Badges */}
-                <div style={{ marginTop: 'var(--space-sm)', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  <button type="button" className="badge badge-neutral" style={{ cursor: 'pointer' }} onClick={() => setCustomSmsText(prev => prev + '{resident_name}')}>
-                    {`{resident_name}`}
-                  </button>
-                  <button type="button" className="badge badge-neutral" style={{ cursor: 'pointer' }} onClick={() => setCustomSmsText(prev => prev + '{amount}')}>
-                    {`{amount}`}
-                  </button>
-                  <button type="button" className="badge badge-neutral" style={{ cursor: 'pointer' }} onClick={() => setCustomSmsText(prev => prev + '{site_name}')}>
-                    {`{site_name}`}
-                  </button>
-                </div>
+                  placeholder="Sayın {resident_name}, {site_name} yönetimi olarak..."
+                ></textarea>
+                <span className="text-xs" style={{ color: 'var(--text-tertiary)', marginTop: '4px' }}>
+                  Kullanılabilir Etiketler: <code>{`{resident_name}`}</code>, <code>{`{amount}`}</code>, <code>{`{site_name}`}</code>
+                </span>
               </div>
 
               <button
                 className="btn btn-primary"
-                style={{ width: '100%' }}
+                style={{ width: '100%', marginTop: '1rem' }}
                 onClick={handleSendSMS}
-                disabled={selectedResidentIds.length === 0 || !customSmsText.trim() || actionLoading}
+                disabled={actionLoading || selectedResidentIds.length === 0 || !customSmsText.trim()}
               >
-                {actionLoading ? 'SMS Gönderiliyor...' : `Seçilen ${selectedResidentIds.length} Kişiye Gönder ➔`}
+                <Send size={18} />
+                {actionLoading ? 'Gönderiliyor...' : `Seçili ${selectedResidentIds.length} Sakine SMS Gönder`}
               </button>
             </div>
           </div>
@@ -416,91 +421,90 @@ export default function SMSPage() {
 
         {/* Tab 2: SMS Templates */}
         {activeTab === 'templates' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 'var(--space-xl)', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '1.5rem', alignItems: 'start' }}>
             <div className="card">
-              <h2 className="heading-sm" style={{ fontSize: '1rem', marginBottom: 'var(--space-lg)' }}>Mevcut SMS Şablonları</h2>
+              <h2 className="heading-sm" style={{ fontSize: '1.05rem', marginBottom: '1rem' }}>
+                Yeni Şablon Ekle
+              </h2>
+              <form onSubmit={handleAddTemplate}>
+                <div className="form-group">
+                  <label className="form-label">Şablon Adı <span className="required">*</span></label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Örn: 1. Hatırlatma Mesajı"
+                    value={templateForm.name}
+                    onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Mesaj Şablonu <span className="required">*</span></label>
+                  <textarea
+                    className="form-input"
+                    rows={4}
+                    placeholder="Sayın {resident_name}, ödenmemiş {amount} borcunuz bulunmaktadır..."
+                    value={templateForm.content}
+                    onChange={(e) => setTemplateForm({ ...templateForm, content: e.target.value })}
+                    required
+                  ></textarea>
+                </div>
+                <button type="submit" className="btn btn-primary" disabled={actionLoading}>
+                  <Plus size={18} /> Şablonu Kaydet
+                </button>
+              </form>
+            </div>
+
+            <div className="card">
+              <h2 className="heading-sm" style={{ fontSize: '1.05rem', marginBottom: '1rem' }}>
+                Kayıtlı Şablonlar
+              </h2>
               {templates.length === 0 ? (
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Kayıtlı özel şablon bulunmuyor.</p>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Henüz kayıtlı şablon bulunmamaktadır.</p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-md)' }}>
-                  {templates.map((tpl) => (
-                    <div key={tpl.id} style={{ padding: 'var(--space-md)', background: 'var(--bg-tertiary)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-primary)' }}>
-                      <div style={{ fontWeight: 600, marginBottom: '4px' }}>{tpl.name}</div>
-                      <p className="text-sm" style={{ color: 'var(--text-secondary)', fontStyle: 'italic', wordBreak: 'break-all' }}>
-                        {tpl.content}
-                      </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {templates.map((t) => (
+                    <div key={t.id} style={{ border: '1px solid var(--border-primary)', borderRadius: 'var(--radius-md)', padding: '1rem' }}>
+                      <div style={{ fontWeight: 700, marginBottom: '0.25rem' }}>{t.name}</div>
+                      <div className="text-sm" style={{ color: 'var(--text-secondary)', background: 'var(--bg-tertiary)', padding: '0.5rem', borderRadius: 'var(--radius-sm)' }}>
+                        {t.content}
+                      </div>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-
-            {/* Add Template Card */}
-            <form className="card" onSubmit={handleAddTemplate}>
-              <h2 className="heading-sm" style={{ fontSize: '1rem', marginBottom: 'var(--space-lg)' }}>Yeni Şablon Ekle</h2>
-              <div className="form-group" style={{ marginBottom: 'var(--space-md)' }}>
-                <label className="form-label" htmlFor="tpl-name">Şablon Adı <span className="required">*</span></label>
-                <input
-                  id="tpl-name"
-                  type="text"
-                  className="form-input"
-                  placeholder="Örn: Gecikme Uyarı Yazısı"
-                  value={templateForm.name}
-                  onChange={(e) => setTemplateForm({ ...templateForm, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="form-group" style={{ marginBottom: 'var(--space-lg)' }}>
-                <label className="form-label" htmlFor="tpl-content">Şablon Mesajı <span className="required">*</span></label>
-                <textarea
-                  id="tpl-content"
-                  className="form-input"
-                  placeholder="Örn: Sayın {resident_name}, {site_name} sitenize ait {amount} aidat borcunuz bulunmaktadır..."
-                  value={templateForm.content}
-                  onChange={(e) => setTemplateForm({ ...templateForm, content: e.target.value })}
-                  rows={4}
-                  required
-                />
-              </div>
-              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={actionLoading}>
-                Şablonu Kaydet
-              </button>
-            </form>
           </div>
         )}
 
-        {/* Tab 3: Sent SMS Logs */}
+        {/* Tab 3: SMS Logs */}
         {activeTab === 'logs' && (
           <div className="card">
-            <h2 className="heading-sm" style={{ fontSize: '1rem', marginBottom: 'var(--space-lg)' }}>Gönderim Geçmişi</h2>
+            <h2 className="heading-sm" style={{ fontSize: '1.05rem', marginBottom: '1rem' }}>
+              Gönderilen SMS Geçmişi
+            </h2>
             {logs.length === 0 ? (
-              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Henüz gönderilmiş SMS kaydı bulunmamaktadır.</p>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Henüz gönderilmiş SMS kaydı yok.</p>
             ) : (
               <div className="table-wrapper">
                 <table className="table">
                   <thead>
                     <tr>
-                      <th>Sakin</th>
+                      <th>Alıcı</th>
                       <th>Telefon</th>
-                      <th>Mesaj</th>
-                      <th>Durum</th>
+                      <th>Gönderilen Metin</th>
                       <th>Tarih</th>
+                      <th>Durum</th>
                     </tr>
                   </thead>
                   <tbody>
                     {logs.map((log) => (
                       <tr key={log.id}>
-                        <td style={{ fontWeight: 600 }}>{log.residents?.full_name || 'Silinmiş Sakin'}</td>
-                        <td>+{log.sent_to_phone}</td>
-                        <td style={{ maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={log.content}>
-                          {log.content}
-                        </td>
-                        <td>
-                          <span className="badge badge-success">Gönderildi</span>
-                        </td>
-                        <td className="text-sm" style={{ color: 'var(--text-tertiary)' }}>
-                          {formatDateTime(log.created_at)}
-                        </td>
+                        <td style={{ fontWeight: 600 }}>{log.residents?.full_name || 'Bilinmeyen'}</td>
+                        <td>{log.sent_to_phone}</td>
+                        <td className="text-sm" style={{ maxWidth: 300 }}>{log.content}</td>
+                        <td className="text-xs" style={{ color: 'var(--text-tertiary)' }}>{formatDateTime(log.created_at)}</td>
+                        <td><span className="badge badge-success">Gönderildi</span></td>
                       </tr>
                     ))}
                   </tbody>

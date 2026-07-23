@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/types';
+import { BarChart3, Users, LogOut, Menu } from 'lucide-react';
 
 export default function AdminLayout({
   children,
@@ -40,8 +41,8 @@ export default function AdminLayout({
     {
       section: 'Platform Sahibi',
       items: [
-        { href: '/admin', label: 'Genel Bakış', icon: '📊' },
-        { href: '/admin/kullanicilar', label: 'Tüm Kullanıcılar', icon: '👥' },
+        { href: '/admin', label: 'Genel Bakış', icon: BarChart3 },
+        { href: '/admin/kullanicilar', label: 'Tüm Kullanıcılar', icon: Users },
       ],
     },
   ];
@@ -78,6 +79,7 @@ export default function AdminLayout({
             <div key={section.section}>
               <div className="sidebar-section-title">{section.section}</div>
               {section.items.map((item) => {
+                const IconComponent = item.icon;
                 const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
                 return (
                   <a
@@ -87,7 +89,7 @@ export default function AdminLayout({
                     onClick={() => setSidebarOpen(false)}
                   >
                     <div className="sidebar-link-inner">
-                      <span>{item.icon}</span>
+                      <IconComponent size={18} />
                       <span>{item.label}</span>
                     </div>
                   </a>
@@ -108,7 +110,7 @@ export default function AdminLayout({
             </div>
           </div>
           <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }} title="Çıkış Yap">
-            🚪
+            <LogOut size={18} />
           </button>
         </div>
       </aside>
@@ -121,7 +123,7 @@ export default function AdminLayout({
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Menü"
           >
-            ☰
+            <Menu size={22} />
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

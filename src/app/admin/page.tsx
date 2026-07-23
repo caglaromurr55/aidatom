@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { formatCurrency } from '@/lib/utils';
+import { Users, Building2, Scale, Banknote, TrendingUp, Shield } from 'lucide-react';
 
 export default function AdminDashboard() {
   const supabase = createClient();
@@ -88,11 +89,11 @@ export default function AdminDashboard() {
   }
 
   const statCards = [
-    { label: 'Üye Yöneticiler', value: stats.managersCount, color: 'var(--color-navy)', icon: '👥' },
-    { label: 'Toplam Site', value: stats.sitesCount, color: 'var(--color-teal)', icon: '🏢' },
-    { label: 'İcradaki Toplam Borç', value: formatCurrency(stats.totalLegalDebt), color: 'var(--error)', icon: '⚖️' },
-    { label: 'Tahsil Edilen Tutar', value: formatCurrency(stats.totalLegalCollected), color: 'var(--success)', icon: '💵' },
-    { label: 'İcra Başarı Oranı', value: `%${stats.legalRate}`, color: 'var(--info)', icon: '📈' },
+    { label: 'Üye Yöneticiler', value: stats.managersCount, color: 'var(--color-navy)', icon: Users },
+    { label: 'Toplam Site', value: stats.sitesCount, color: 'var(--color-teal)', icon: Building2 },
+    { label: 'İcradaki Toplam Borç', value: formatCurrency(stats.totalLegalDebt), color: 'var(--error)', icon: Scale },
+    { label: 'Tahsil Edilen Tutar', value: formatCurrency(stats.totalLegalCollected), color: 'var(--success)', icon: Banknote },
+    { label: 'İcra Başarı Oranı', value: `%${stats.legalRate}`, color: 'var(--info)', icon: TrendingUp },
   ];
 
   return (
@@ -107,7 +108,7 @@ export default function AdminDashboard() {
           </div>
           <div>
             <a href="/admin/kullanicilar" className="btn btn-navy btn-sm">
-              👥 Tüm Kullanıcı Listesi
+              <Users size={16} /> Tüm Kullanıcı Listesi
             </a>
           </div>
         </div>
@@ -115,23 +116,26 @@ export default function AdminDashboard() {
 
       {/* Stat Grid */}
       <div className="stat-grid">
-        {statCards.map((stat, i) => (
-          <div key={i} className="stat-card">
-            <div className="stat-card-top">
-              <div className="stat-icon">{stat.icon}</div>
-              <span className="stat-value" style={{ color: stat.color, fontSize: typeof stat.value === 'string' && stat.value.length > 8 ? '1.35rem' : '1.75rem' }}>
-                {stat.value}
-              </span>
+        {statCards.map((stat, i) => {
+          const IconComp = stat.icon;
+          return (
+            <div key={i} className="stat-card">
+              <div className="stat-card-top">
+                <div className="stat-icon"><IconComp size={22} /></div>
+                <span className="stat-value" style={{ color: stat.color, fontSize: typeof stat.value === 'string' && stat.value.length > 8 ? '1.35rem' : '1.75rem' }}>
+                  {stat.value}
+                </span>
+              </div>
+              <span className="stat-label">{stat.label}</span>
             </div>
-            <span className="stat-label">{stat.label}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Recent Legal Handovers */}
       <div className="card">
         <h2 className="heading-sm" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>⚖️</span> Hukuk Departmanına Devredilen Son Dosyalar
+          <Scale size={20} style={{ color: 'var(--color-teal)' }} /> Hukuk Departmanına Devredilen Son Dosyalar
         </h2>
 
         {recentCases.length === 0 ? (
@@ -154,7 +158,12 @@ export default function AdminDashboard() {
                   return (
                     <tr key={c.id}>
                       <td style={{ fontWeight: 600 }}>{c.residents?.full_name || 'Tanımsız'}</td>
-                      <td>🏢 {c.sites?.name || '-'}</td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Building2 size={14} style={{ color: 'var(--text-tertiary)' }} />
+                          {c.sites?.name || '-'}
+                        </div>
+                      </td>
                       <td style={{ fontWeight: 700, color: 'var(--error)' }}>{formatCurrency(totalDebt)}</td>
                       <td className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                         {new Date(c.referred_at).toLocaleDateString('tr-TR')}

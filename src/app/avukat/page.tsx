@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
 import type { LegalCase } from '@/types';
+import { Scale, Search, Building2, ChevronRight, FileText } from 'lucide-react';
 
 interface LegalCaseWithDetails extends LegalCase {
   residents: { full_name: string; phone: string; tc_no: string } | null;
@@ -90,11 +91,11 @@ export default function LawyerDashboard() {
       {/* Filter Bar */}
       <div className="card" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <div style={{ flex: 1, minWidth: 240 }}>
+          <div style={{ flex: 1, minWidth: 240, position: 'relative' }}>
             <input
               type="text"
               className="form-input"
-              placeholder="🔍 Borçlu sakin veya site adı ara..."
+              placeholder="Borçlu sakin veya site adı ara..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -119,7 +120,9 @@ export default function LawyerDashboard() {
 
       {filteredCases.length === 0 ? (
         <div className="empty-state">
-          <div className="icon">⚖️</div>
+          <div className="icon">
+            <Scale size={32} />
+          </div>
           <h3>İcra Dosyası Bulunamadı</h3>
           <p>Hukuk büronuza yönlendirilmiş aktif icra takip kaydı bulunmamaktadır.</p>
         </div>
@@ -145,8 +148,8 @@ export default function LawyerDashboard() {
                   <tr key={c.id}>
                     <td>
                       <div style={{ fontWeight: 600 }}>{c.residents?.full_name || 'Tanımsız'}</div>
-                      <div className="text-xs" style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>
-                        🏢 {c.sites?.name || '-'}
+                      <div className="text-xs" style={{ color: 'var(--text-secondary)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Building2 size={12} /> {c.sites?.name || '-'}
                       </div>
                     </td>
                     <td>{c.residents?.tc_no || '-'}</td>
@@ -159,7 +162,7 @@ export default function LawyerDashboard() {
                     <td>{getStatusBadge(c.status)}</td>
                     <td>
                       <a href={`/avukat/${c.id}`} className="btn btn-primary btn-sm">
-                        İncele & Güncelle ➔
+                        İncele <ChevronRight size={14} />
                       </a>
                     </td>
                   </tr>

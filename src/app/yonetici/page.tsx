@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { formatCurrency } from '@/lib/utils';
+import { Building2, KeyRound, Users, Scale, Wallet, Plus, FileSpreadsheet, CreditCard, History } from 'lucide-react';
 
 export default function YoneticiDashboard() {
   const supabase = createClient();
@@ -141,10 +142,10 @@ export default function YoneticiDashboard() {
   }
 
   const cards = [
-    { label: 'Yönetilen Siteler', value: stats.sitesCount, color: 'var(--color-navy)', icon: '🏢' },
-    { label: 'Toplam Daire', value: stats.unitsCount, color: 'var(--color-teal)', icon: '🔑' },
-    { label: 'Aktif Sakin', value: stats.residentsCount, color: 'var(--success)', icon: '👥' },
-    { label: 'İcradaki Dosya', value: stats.legalCount, color: 'var(--error)', icon: '⚖️' },
+    { label: 'Yönetilen Siteler', value: stats.sitesCount, color: 'var(--color-navy)', icon: Building2 },
+    { label: 'Toplam Daire', value: stats.unitsCount, color: 'var(--color-teal)', icon: KeyRound },
+    { label: 'Aktif Sakin', value: stats.residentsCount, color: 'var(--success)', icon: Users },
+    { label: 'İcradaki Dosya', value: stats.legalCount, color: 'var(--error)', icon: Scale },
   ];
 
   return (
@@ -159,7 +160,7 @@ export default function YoneticiDashboard() {
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <a href="/yonetici/siteler" className="btn btn-primary btn-sm">
-              + Yeni Site Ekle
+              <Plus size={16} /> Yeni Site Ekle
             </a>
           </div>
         </div>
@@ -167,22 +168,27 @@ export default function YoneticiDashboard() {
 
       {/* Stat Grid */}
       <div className="stat-grid">
-        {cards.map((card, i) => (
-          <div key={i} className="stat-card">
-            <div className="stat-card-top">
-              <div className="stat-icon">{card.icon}</div>
-              <span className="stat-value" style={{ color: card.color }}>{card.value}</span>
+        {cards.map((card, i) => {
+          const IconComp = card.icon;
+          return (
+            <div key={i} className="stat-card">
+              <div className="stat-card-top">
+                <div className="stat-icon">
+                  <IconComp size={22} />
+                </div>
+                <span className="stat-value" style={{ color: card.color }}>{card.value}</span>
+              </div>
+              <span className="stat-label">{card.label}</span>
             </div>
-            <span className="stat-label">{card.label}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Financial Overview & Quick Shortcuts */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         <div className="card">
           <h2 className="heading-sm" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>💰</span> Finansal Özet
+            <Wallet size={20} style={{ color: 'var(--color-teal)' }} /> Finansal Özet
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-primary)', paddingBottom: '0.75rem' }}>
@@ -202,13 +208,21 @@ export default function YoneticiDashboard() {
 
         <div className="card">
           <h2 className="heading-sm" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>⚡</span> Hızlı İşlem Kısayolları
+            <Plus size={20} style={{ color: 'var(--color-teal)' }} /> Hızlı İşlem Kısayolları
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem' }}>
-            <a href="/yonetici/siteler" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>🏢 Site Yönetimi</a>
-            <a href="/yonetici/alacaklar" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>💰 Aidat & Alacak</a>
-            <a href="/yonetici/excel-yukle" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>📋 Excel Yükle</a>
-            <a href="/yonetici/icraya-devret" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>⚖️ İcraya Devret</a>
+            <a href="/yonetici/siteler" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>
+              <Building2 size={16} /> Site Yönetimi
+            </a>
+            <a href="/yonetici/alacaklar" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>
+              <Wallet size={16} /> Aidat & Alacak
+            </a>
+            <a href="/yonetici/excel-yukle" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>
+              <FileSpreadsheet size={16} /> Excel Yükle
+            </a>
+            <a href="/yonetici/icraya-devret" className="btn btn-secondary" style={{ justifyContent: 'flex-start' }}>
+              <Scale size={16} /> İcraya Devret
+            </a>
           </div>
         </div>
       </div>
@@ -216,7 +230,7 @@ export default function YoneticiDashboard() {
       {/* Recent Audit Logs */}
       <div className="card">
         <h2 className="heading-sm" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span>📝</span> Son Sistem İşlem Kayıtları
+          <History size={20} style={{ color: 'var(--color-teal)' }} /> Son Sistem İşlem Kayıtları
         </h2>
         {recentAuditLogs.length === 0 ? (
           <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Henüz bir işlem kaydı bulunmuyor.</p>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { Clock, Users, CheckCircle2, ShieldAlert, PhoneCall, FileCheck, RefreshCw } from 'lucide-react';
 
 export default function SistemDashboard() {
   const supabase = createClient();
@@ -50,11 +51,11 @@ export default function SistemDashboard() {
   }
 
   const statCards = [
-    { label: 'Onay Bekleyen Başvuru', value: stats.pendingApprovals, color: 'var(--warning)', icon: '⏳' },
-    { label: 'Toplam Kayıtlı Yönetici', value: stats.totalUsers, color: 'var(--color-navy)', icon: '👥' },
-    { label: 'Aktif Onaylı Kullanıcı', value: stats.approvedUsers, color: 'var(--success)', icon: '✅' },
-    { label: 'Askıya Alınanlar', value: stats.suspendedUsers, color: 'var(--error)', icon: '🚫' },
-    { label: 'Yeni İletişim Talebi', value: stats.unreadContacts, color: 'var(--color-teal)', icon: '📞' },
+    { label: 'Onay Bekleyen Başvuru', value: stats.pendingApprovals, color: 'var(--warning)', icon: Clock },
+    { label: 'Toplam Kayıtlı Yönetici', value: stats.totalUsers, color: 'var(--color-navy)', icon: Users },
+    { label: 'Aktif Onaylı Kullanıcı', value: stats.approvedUsers, color: 'var(--success)', icon: CheckCircle2 },
+    { label: 'Askıya Alınanlar', value: stats.suspendedUsers, color: 'var(--error)', icon: ShieldAlert },
+    { label: 'Yeni İletişim Talebi', value: stats.unreadContacts, color: 'var(--color-teal)', icon: PhoneCall },
   ];
 
   return (
@@ -69,7 +70,7 @@ export default function SistemDashboard() {
           </div>
           <div>
             <a href="/sistem/evrak-kontrol" className="btn btn-primary btn-sm">
-              📋 Onay Bekleyen Evraklar ({stats.pendingApprovals})
+              <FileCheck size={16} /> Onay Bekleyen Evraklar ({stats.pendingApprovals})
             </a>
           </div>
         </div>
@@ -77,15 +78,18 @@ export default function SistemDashboard() {
 
       {/* Stat Grid */}
       <div className="stat-grid">
-        {statCards.map((stat, i) => (
-          <div key={i} className="stat-card">
-            <div className="stat-card-top">
-              <div className="stat-icon">{stat.icon}</div>
-              <span className="stat-value" style={{ color: stat.color }}>{stat.value}</span>
+        {statCards.map((stat, i) => {
+          const IconComp = stat.icon;
+          return (
+            <div key={i} className="stat-card">
+              <div className="stat-card-top">
+                <div className="stat-icon"><IconComp size={22} /></div>
+                <span className="stat-value" style={{ color: stat.color }}>{stat.value}</span>
+              </div>
+              <span className="stat-label">{stat.label}</span>
             </div>
-            <span className="stat-label">{stat.label}</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Quick Navigation Cards */}
@@ -93,7 +97,9 @@ export default function SistemDashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
         <a href="/sistem/evrak-kontrol" className="card card-hover" style={{ textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div className="stat-icon" style={{ backgroundColor: 'var(--warning-bg)', color: 'var(--warning-text)' }}>📋</div>
+            <div className="stat-icon" style={{ backgroundColor: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
+              <FileCheck size={22} />
+            </div>
             <div>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Evrak Kontrol & Onay</h3>
               <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -105,7 +111,9 @@ export default function SistemDashboard() {
 
         <a href="/sistem/kullanicilar" className="card card-hover" style={{ textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div className="stat-icon" style={{ backgroundColor: 'var(--info-bg)', color: 'var(--info-text)' }}>👥</div>
+            <div className="stat-icon" style={{ backgroundColor: 'var(--info-bg)', color: 'var(--info-text)' }}>
+              <Users size={22} />
+            </div>
             <div>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Kullanıcı Yönetimi</h3>
               <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -117,7 +125,9 @@ export default function SistemDashboard() {
 
         <a href="/sistem/iletisim-talepleri" className="card card-hover" style={{ textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div className="stat-icon" style={{ backgroundColor: 'var(--success-bg)', color: 'var(--success-text)' }}>📞</div>
+            <div className="stat-icon" style={{ backgroundColor: 'var(--success-bg)', color: 'var(--success-text)' }}>
+              <PhoneCall size={22} />
+            </div>
             <div>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>İletişim & Ön Analiz Talepleri</h3>
               <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>
@@ -129,7 +139,9 @@ export default function SistemDashboard() {
 
         <a href="/sistem/devirler" className="card card-hover" style={{ textDecoration: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div className="stat-icon" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--color-navy)' }}>🔄</div>
+            <div className="stat-icon" style={{ backgroundColor: 'var(--bg-tertiary)', color: 'var(--color-navy)' }}>
+              <RefreshCw size={22} />
+            </div>
             <div>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Yönetici Devir Onayları</h3>
               <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '2px' }}>

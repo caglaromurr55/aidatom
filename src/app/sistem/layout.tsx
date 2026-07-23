@@ -4,6 +4,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/types';
+import { 
+  BarChart3, 
+  FileCheck, 
+  Users, 
+  PhoneCall, 
+  RefreshCw, 
+  MessageSquareCode, 
+  Settings, 
+  Bell, 
+  LogOut, 
+  Menu 
+} from 'lucide-react';
 
 export default function SistemLayout({
   children,
@@ -73,11 +85,11 @@ export default function SistemLayout({
     {
       section: 'Yönetim Merkezi',
       items: [
-        { href: '/sistem', label: 'Dashboard', icon: '📊' },
-        { href: '/sistem/evrak-kontrol', label: 'Evrak Kontrol', icon: '📋', badge: pendingApprovals },
-        { href: '/sistem/kullanicilar', label: 'Kullanıcılar', icon: '👥' },
-        { href: '/sistem/iletisim-talepleri', label: 'İletişim Talepleri', icon: '📞', badge: unreadContacts },
-        { href: '/sistem/devirler', label: 'Yönetici Devirleri', icon: '🔄', badge: pendingHandovers },
+        { href: '/sistem', label: 'Dashboard', icon: BarChart3 },
+        { href: '/sistem/evrak-kontrol', label: 'Evrak Kontrol', icon: FileCheck, badge: pendingApprovals },
+        { href: '/sistem/kullanicilar', label: 'Kullanıcılar', icon: Users },
+        { href: '/sistem/iletisim-talepleri', label: 'İletişim Talepleri', icon: PhoneCall, badge: unreadContacts },
+        { href: '/sistem/devirler', label: 'Yönetici Devirleri', icon: RefreshCw, badge: pendingHandovers },
       ],
     },
   ];
@@ -114,6 +126,7 @@ export default function SistemLayout({
             <div key={section.section}>
               <div className="sidebar-section-title">{section.section}</div>
               {section.items.map((item) => {
+                const IconComponent = item.icon;
                 const isActive = pathname === item.href || (item.href !== '/sistem' && pathname.startsWith(item.href));
                 return (
                   <a
@@ -123,7 +136,7 @@ export default function SistemLayout({
                     onClick={() => setSidebarOpen(false)}
                   >
                     <div className="sidebar-link-inner">
-                      <span>{item.icon}</span>
+                      <IconComponent size={18} />
                       <span>{item.label}</span>
                     </div>
                     {item.badge ? (
@@ -147,7 +160,7 @@ export default function SistemLayout({
             </div>
           </div>
           <button onClick={handleLogout} className="btn btn-ghost btn-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }} title="Çıkış Yap">
-            🚪
+            <LogOut size={18} />
           </button>
         </div>
       </aside>
@@ -160,7 +173,7 @@ export default function SistemLayout({
             onClick={() => setSidebarOpen(!sidebarOpen)}
             aria-label="Menü"
           >
-            ☰
+            <Menu size={22} />
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -169,7 +182,7 @@ export default function SistemLayout({
 
           <div className="topbar-right">
             <button className="topbar-icon-btn" title="Bildirimler">
-              🔔
+              <Bell size={18} />
               {unreadNotifs > 0 && <span className="topbar-badge-count">{unreadNotifs}</span>}
             </button>
             <div style={{ height: '24px', width: '1px', backgroundColor: 'var(--border-primary)' }}></div>
