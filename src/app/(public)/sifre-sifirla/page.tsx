@@ -74,7 +74,7 @@ export default function ResetPasswordPage() {
         <div className="auth-container animate-fade-in-up">
           <div className="auth-logo">
             <a href="/">
-              <span className="logo-teal">AİDAT</span>OM
+              <img src="/logo.svg" alt="Aidatom" style={{ height: '40px', width: 'auto' }} />
             </a>
           </div>
           <div className="auth-card" style={{ textAlign: 'center' }}>

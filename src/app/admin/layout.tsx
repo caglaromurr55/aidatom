@@ -66,8 +66,7 @@ export default function AdminLayout({
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <a href="/admin" className="sidebar-logo">
-            <span className="logo-teal">AİDAT</span>
-            <span className="logo-white">OM</span>
+            <img src="/logo-white.svg" alt="Aidatom" style={{ height: '36px', width: 'auto' }} />
           </a>
           <div style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>
             Süper Admin Konsolu

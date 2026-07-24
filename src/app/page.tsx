@@ -224,7 +224,7 @@ KVKK Onayı: Evet
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <div className="navbar-inner">
           <a href="#" className="navbar-logo" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
-            <span className="logo-teal">AİDAT</span>OM
+            <img src="/logo.svg" alt="Aidatom" style={{ height: '36px', width: 'auto' }} />
           </a>
 
           <div className="navbar-links">
@@ -1061,7 +1061,7 @@ KVKK Onayı: Evet
           <div className="footer-grid">
             <div className="footer-brand">
               <a href="#" className="navbar-logo" style={{ marginBottom: 'var(--space-md)', color: '#FFFFFF' }}>
-                <span className="logo-teal">AİDAT</span>OM
+                <img src="/logo-white.svg" alt="Aidatom" style={{ height: '36px', width: 'auto' }} />
               </a>
               <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9375rem', lineHeight: '1.6' }}>
                 AİDATOM; teknolojiyle desteklenen, uzman ekip tarafından yürütülen, yönetici kontrollü ve raporlanabilir bir aidat operasyon merkezidir.
