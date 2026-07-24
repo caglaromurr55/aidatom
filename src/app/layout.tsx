@@ -10,10 +10,9 @@ export const metadata: Metadata = {
     icon: [
       { url: '/icon.ico', type: 'image/x-icon' },
       { url: '/favicon.ico', type: 'image/x-icon' },
-      { url: '/logo.svg', type: 'image/svg+xml' },
     ],
     shortcut: '/icon.ico',
-    apple: '/logo.svg',
+    apple: '/icon.ico',
   },
   openGraph: {
     title: 'Aidatom — Akıllı Aidat Yönetim Sistemi',
@@ -34,7 +33,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/icon.ico" sizes="any" />
         <link rel="shortcut icon" href="/icon.ico" />
-        <link rel="alternate icon" href="/logo.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/icon.ico" />
       </head>
       <body>
         {children}
