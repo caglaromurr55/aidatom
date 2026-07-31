@@ -13,38 +13,58 @@ export async function POST(request: Request) {
     }
 
     const cleanInput = input.trim();
-    let queryField = 'email';
-    let searchValue = cleanInput;
-
-    // Check if input is phone number
-    if (!cleanInput.includes('@')) {
-      let phone = cleanInput.replace(/\D/g, '');
-      if (phone.startsWith('0')) {
-        phone = '90' + phone.substring(1);
-      } else if (!phone.startsWith('90')) {
-        phone = '90' + phone;
-      }
-      queryField = 'phone';
-      searchValue = phone;
-    }
+    const isEmail = cleanInput.includes('@');
 
     // Initialize Supabase Admin client
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Query profile
-    const { data: profile, error: profileErr } = await supabase
-      .from('profiles')
-      .select('id, full_name, email, phone')
-      .eq(queryField, searchValue)
-      .single();
+    let profile: any = null;
 
-    if (profileErr || !profile) {
-      return NextResponse.json({ error: 'Bu bilgilere ait bir kullanıcı kaydı bulunamadı.' }, { status: 444 });
+    if (isEmail) {
+      // Search by email
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, phone')
+        .ilike('email', cleanInput)
+        .limit(1);
+      
+      if (data && data.length > 0) {
+        profile = data[0];
+      }
+    } else {
+      // Search by phone with all format variants (5XX..., 05XX..., 905XX..., +905XX...)
+      const rawDigits = cleanInput.replace(/\D/g, '');
+      const base10 = rawDigits.length >= 10 ? rawDigits.slice(-10) : rawDigits;
+      
+      const phoneVariants = [
+        base10,
+        `0${base10}`,
+        `90${base10}`,
+        `+90${base10}`,
+      ];
+
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, full_name, email, phone')
+        .in('phone', phoneVariants)
+        .limit(1);
+
+      if (data && data.length > 0) {
+        profile = data[0];
+      }
     }
 
-    const recipientEmail = profile.email || `${profile.phone}@aidatom.com`;
+    if (!profile) {
+      return NextResponse.json({ error: 'Bu telefon numarasına veya e-postaya ait bir kullanıcı bulunamadı.' }, { status: 404 });
+    }
+
+    // Determine recipient email for sending reset link
+    let recipientEmail = profile.email;
+    if (!recipientEmail || recipientEmail.trim() === '') {
+      recipientEmail = `${profile.phone}@aidatom.com`;
+    }
 
     // Generate cryptographic 1-hour expiration HMAC token
     const exp = Date.now() + 3600 * 1000; // 1 hour validity
@@ -57,10 +77,9 @@ export async function POST(request: Request) {
 
     // Send email via Nodemailer
     try {
-      await sendPasswordResetEmail(recipientEmail, profile.full_name, resetLink);
+      await sendPasswordResetEmail(recipientEmail, profile.full_name || 'Sayın Kullanıcımız', resetLink);
     } catch (mailErr: any) {
       console.error('SMTP Mail error:', mailErr);
-      // Fallback response with link if SMTP credentials are not yet populated in .env.local
       return NextResponse.json({
         success: true,
         message: `Şifre sıfırlama bağlantısı ${recipientEmail} adresine gönderildi.`,
@@ -70,7 +89,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Şifre sıfırlama bağlantısı ${recipientEmail} adresine e-posta olarak gönderildi.`,
+      message: `Şifre sıfırlama bağlantısı (${recipientEmail}) adresine e-posta olarak gönderildi.`,
     });
   } catch (err: any) {
     console.error('Reset Password API Error:', err);
