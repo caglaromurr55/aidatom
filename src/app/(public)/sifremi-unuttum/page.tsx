@@ -1,202 +1,139 @@
 'use client';
 
 import { useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { Mail, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import '../auth.css';
 
 export default function ForgotPasswordPage() {
-  const [phone, setPhone] = useState('');
+  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  
-  // Verification states
-  const [verificationStep, setVerificationStep] = useState(false);
-  const [generatedCode, setGeneratedCode] = useState('');
-  const [inputCode, setInputCode] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [debugLink, setDebugLink] = useState('');
 
-  const supabase = createClient();
-
-  const handleSendCode = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
-    if (!phone || phone.length < 10) {
-      setError('Geçerli bir telefon numarası girin.');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      let normalizedPhone = phone.replace(/\D/g, '');
-      if (normalizedPhone.startsWith('0')) {
-        normalizedPhone = normalizedPhone.substring(1);
-      }
-      if (normalizedPhone.length === 10) {
-        normalizedPhone = '90' + normalizedPhone;
-      }
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input }),
+      });
 
-      // Verify profile exists in database
-      const { data: profile, error: dbError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('phone', normalizedPhone)
-        .single();
+      const data = await res.json();
 
-      if (dbError || !profile) {
-        setError('Bu telefon numarası sisteme kayıtlı değildir.');
-        setLoading(false);
+      if (!res.ok) {
+        setError(data.error || 'Şifre sıfırlama bağlantısı gönderilemedi.');
         return;
       }
 
-      // Generate a mock code
-      const mockCode = Math.floor(100000 + Math.random() * 900000).toString();
-      setGeneratedCode(mockCode);
-      setVerificationStep(true);
+      setSuccessMessage(data.message || 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.');
+      if (data.debugLink) {
+        setDebugLink(data.debugLink);
+      }
+      setSuccess(true);
     } catch {
-      setError('Beklenmeyen bir hata oluştu.');
+      setError('İstek işlenirken bağlantı hatası oluştu. Lütfen tekrar deneyin.');
     } finally {
       setLoading(false);
     }
   };
-
-  const handleVerifyCode = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (inputCode !== generatedCode) {
-      setError('Girdiğiniz doğrulama kodu hatalıdır.');
-      return;
-    }
-
-    // Save phone to sessionStorage to allow reset password on next page
-    let normalizedPhone = phone.replace(/\D/g, '');
-    if (normalizedPhone.startsWith('0')) {
-      normalizedPhone = normalizedPhone.substring(1);
-    }
-    if (normalizedPhone.length === 10) {
-      normalizedPhone = '90' + normalizedPhone;
-    }
-    sessionStorage.setItem('reset_phone', normalizedPhone);
-
-    setSuccess(true);
-  };
-
-  if (success) {
-    return (
-      <div className="auth-page">
-        <div className="auth-container animate-fade-in-up">
-          <div className="auth-logo">
-            <a href="/">
-              <img src="/logo.svg" alt="Aidatom" style={{ height: '40px', width: 'auto' }} />
-            </a>
-          </div>
-          <div className="auth-card" style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '24px' }}>🔒</div>
-            <h1>Kimlik Doğrulandı</h1>
-            <p className="subtitle" style={{ marginBottom: '24px', lineHeight: 1.6 }}>
-              Telefon numaranız başarıyla doğrulandı. Şimdi yeni şifrenizi belirleyebilirsiniz.
-            </p>
-            <a href="/sifre-sifirla" className="btn-auth-submit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              Yeni Şifre Belirle
-            </a>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="auth-page">
       <div className="auth-container animate-fade-in-up">
         <div className="auth-logo">
           <a href="/">
-            <span className="logo-teal">AİDAT</span>OM
+            <img src="/logo.svg" alt="Aidatom" style={{ height: '42px', width: 'auto' }} />
           </a>
         </div>
 
         <div className="auth-card">
           <h1>Şifremi Unuttum</h1>
           <p className="subtitle">
-            {!verificationStep
-              ? 'Kayıtlı telefon numaranızı girerek şifrenizi sıfırlayın.'
-              : 'Telefonunuza simüle edilen 6 haneli doğrulama kodunu girin.'}
+            Kayıtlı telefon numaranızı veya e-posta adresinizi girerek şifre sıfırlama bağlantısı talep edin.
           </p>
 
           {error && (
             <div className="auth-alert error">
-              <span>⚠</span>
+              <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
               <span>{error}</span>
             </div>
           )}
 
-          {verificationStep && generatedCode && (
-            <div className="auth-alert success" style={{ marginBottom: '24px' }}>
-              <span>💬</span>
-              <span><strong>[MOCK SMS]</strong> Gelen Kod: <strong>{generatedCode}</strong></span>
-            </div>
-          )}
+          {success ? (
+            <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+              <div style={{
+                width: 64, height: 64, borderRadius: '50%',
+                backgroundColor: 'var(--success-bg)', color: 'var(--success)',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: '1.25rem'
+              }}>
+                <CheckCircle2 size={36} />
+              </div>
 
-          {!verificationStep ? (
-            <form className="auth-form" onSubmit={handleSendCode}>
-              <div className="form-group" style={{ marginBottom: '24px' }}>
-                <label className="form-label" htmlFor="reset-phone">
-                  Telefon Numarası <span className="required">*</span>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem', color: '#0F1F3D' }}>
+                E-Posta Gönderildi!
+              </h2>
+
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+                {successMessage}
+              </p>
+
+              {debugLink && (
+                <div style={{ background: '#F8FAFC', padding: '0.75rem', borderRadius: '8px', border: '1px solid #E2E8F0', marginBottom: '1.5rem', textAlign: 'left' }}>
+                  <div className="text-xs" style={{ fontWeight: 600, color: '#64748B', marginBottom: '4px' }}>⚙ Test Sıfırlama Bağlantısı (Geliştirici Modu):</div>
+                  <a href={debugLink} className="text-xs" style={{ color: 'var(--color-teal)', wordBreak: 'break-all' }}>
+                    {debugLink}
+                  </a>
+                </div>
+              )}
+
+              <a href="/giris" className="btn-auth-submit" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px', textDecoration: 'none' }}>
+                <ArrowLeft size={18} /> Giriş Ekranına Dön
+              </a>
+            </div>
+          ) : (
+            <form className="auth-form" onSubmit={handleSubmit}>
+              <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                <label className="form-label" htmlFor="reset-input">
+                  Telefon Numarası veya E-Posta
                 </label>
-                <div className="phone-input-wrapper">
-                  <span className="phone-prefix">+90</span>
+                <div style={{ position: 'relative' }}>
                   <input
-                    id="reset-phone"
-                    type="tel"
+                    id="reset-input"
+                    type="text"
                     className="form-input"
-                    placeholder="5XX XXX XX XX"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    placeholder="05XX XXX XX XX veya ornek@aidatom.com"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
                     required
                   />
+                  <Mail size={18} style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }} />
                 </div>
               </div>
 
               <button
                 type="submit"
                 className="btn-auth-submit"
-                disabled={loading}
+                disabled={loading || !input.trim()}
               >
-                {loading ? 'Kontrol ediliyor...' : 'Doğrulama Kodu Gönder'}
-              </button>
-            </form>
-          ) : (
-            <form className="auth-form" onSubmit={handleVerifyCode}>
-              <div className="form-group" style={{ marginBottom: '24px' }}>
-                <label className="form-label" htmlFor="sms-code">
-                  Doğrulama Kodu <span className="required">*</span>
-                </label>
-                <input
-                  id="sms-code"
-                  type="text"
-                  maxLength={6}
-                  className="form-input"
-                  placeholder="------"
-                  value={inputCode}
-                  onChange={(e) => setInputCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  required
-                  style={{ textAlign: 'center', fontSize: '1.25rem', letterSpacing: '0.25em' }}
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="btn-auth-submit"
-              >
-                Kodu Doğrula
+                {loading ? 'E-Posta Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder'}
               </button>
             </form>
           )}
 
-          <div className="auth-footer">
-            Şifrenizi hatırladınız mı?{' '}
-            <a href="/giris">Giriş Yapın</a>
+          <div className="auth-footer" style={{ marginTop: '1.5rem' }}>
+            <p>
+              Şifrenizi hatırladınız mı?{' '}
+              <a href="/giris" className="auth-link">
+                Giriş Yapın
+              </a>
+            </p>
           </div>
         </div>
       </div>

@@ -193,16 +193,16 @@ CREATE TABLE IF NOT EXISTS public.legal_collections (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 9. Create call_logs table
-CREATE TABLE IF NOT EXISTS public.call_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  resident_id UUID REFERENCES public.residents(id) ON DELETE SET NULL,
-  contact_request_id UUID REFERENCES public.contact_requests(id) ON DELETE SET NULL,
-  called_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  phone TEXT NOT NULL,
-  call_status TEXT NOT NULL DEFAULT 'reached',
-  notes TEXT NOT NULL,
-  call_date TIMESTAMPTZ DEFAULT now(),
-  created_at TIMESTAMPTZ DEFAULT now()
-);
+-- 10. Helper function to reset password by UUID
+CREATE OR REPLACE FUNCTION public.reset_user_password(p_uid UUID, p_new_password TEXT)
+RETURNS BOOLEAN AS $$
+BEGIN
+  UPDATE auth.users
+  SET encrypted_password = crypt(p_new_password, gen_salt('bf', 10)),
+      updated_at = now()
+  WHERE id = p_uid;
+
+  RETURN FOUND;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
