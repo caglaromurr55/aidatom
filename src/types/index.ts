@@ -5,7 +5,7 @@
 // ── Enums ──
 export type ManagerType = 'individual' | 'company';
 
-export type UserRole = 'super_admin' | 'system_admin' | 'site_manager' | 'lawyer';
+export type UserRole = 'super_admin' | 'system_admin' | 'site_manager' | 'lawyer' | 'call_center';
 
 export type UserStatus = 'pending_documents' | 'pending_review' | 'approved' | 'rejected' | 'suspended';
 
@@ -164,6 +164,9 @@ export interface LegalCase {
   referred_by: string;
   total_debt: number;
   total_late_fee: number;
+  attorney_fee: number;
+  court_expenses: number;
+  assigned_lawyer_id?: string | null;
   status: LegalCaseStatus;
   collected_amount: number;
   notes: string | null;
@@ -173,12 +176,36 @@ export interface LegalCase {
   updated_at: string;
 }
 
+export interface LegalCollection {
+  id: string;
+  legal_case_id: string;
+  amount: number;
+  attorney_fee_portion: number;
+  collection_date: string;
+  payment_method: string;
+  notes: string | null;
+  created_by: string;
+  created_at: string;
+}
+
 export interface LegalCaseAction {
   id: string;
   legal_case_id: string;
   action_by: string;
   action_type: string;
   description: string;
+  created_at: string;
+}
+
+export interface CallLog {
+  id: string;
+  resident_id?: string | null;
+  contact_request_id?: string | null;
+  called_by: string;
+  phone: string;
+  call_status: 'reached' | 'promise_given' | 'not_reached' | 'wrong_number' | 'busy';
+  notes: string;
+  call_date: string;
   created_at: string;
 }
 

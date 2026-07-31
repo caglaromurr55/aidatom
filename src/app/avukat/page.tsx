@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
 import type { LegalCase } from '@/types';
-import { Scale, Search, Building2, ChevronRight, FileText } from 'lucide-react';
+import { Scale, Search, Building2, ChevronRight, FileText, Wallet } from 'lucide-react';
 
 interface LegalCaseWithDetails extends LegalCase {
   residents: { full_name: string; phone: string; tc_no: string } | null;
@@ -82,7 +82,7 @@ export default function LawyerDashboard() {
           <div>
             <h1 className="heading-md">İcra Takip Dosyaları</h1>
             <p className="text-sm" style={{ color: 'var(--text-secondary)', marginTop: '4px' }}>
-              Hukuk büronuza devredilmiş tüm icra dosyalarını yönetin ve hukuki işlem kayıtlarını girin.
+              Hukuk büronuza devredilmiş tüm icra dosyalarını yönetin, vekalet ücreti/masraf ekleyin ve tahsilat kayıtlarını girin.
             </p>
           </div>
         </div>
@@ -132,18 +132,23 @@ export default function LawyerDashboard() {
             <thead>
               <tr>
                 <th>Borçlu Sakin / Site</th>
-                <th>TC Kimlik No</th>
                 <th>Devir Tarihi</th>
-                <th>Asıl Borç</th>
-                <th>Gecikme Faizi</th>
-                <th>Toplam Borç</th>
+                <th>Asıl Borç + Faiz</th>
+                <th>Vekalet Hakedişi</th>
+                <th>Toplam Alacak</th>
+                <th>Tahsil Edilen</th>
                 <th>Dosya Durumu</th>
                 <th>İşlem</th>
               </tr>
             </thead>
             <tbody>
               {filteredCases.map((c) => {
-                const totalDebt = Number(c.total_debt) + Number(c.total_late_fee);
+                const debtAndFee = Number(c.total_debt) + Number(c.total_late_fee);
+                const attFee = Number(c.attorney_fee || 0);
+                const courtExp = Number(c.court_expenses || 0);
+                const totalCaseGrand = debtAndFee + attFee + courtExp;
+                const collected = Number(c.collected_amount || 0);
+
                 return (
                   <tr key={c.id}>
                     <td>
@@ -152,13 +157,13 @@ export default function LawyerDashboard() {
                         <Building2 size={12} /> {c.sites?.name || '-'}
                       </div>
                     </td>
-                    <td>{c.residents?.tc_no || '-'}</td>
                     <td className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
                       {formatDateTime(c.referred_at)}
                     </td>
-                    <td>{formatCurrency(c.total_debt)}</td>
-                    <td style={{ color: 'var(--warning-text)' }}>+{formatCurrency(c.total_late_fee)}</td>
-                    <td style={{ fontWeight: 700, color: 'var(--error)' }}>{formatCurrency(totalDebt)}</td>
+                    <td>{formatCurrency(debtAndFee)}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--color-navy)' }}>{formatCurrency(attFee)}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--error)' }}>{formatCurrency(totalCaseGrand)}</td>
+                    <td style={{ fontWeight: 700, color: 'var(--success)' }}>{formatCurrency(collected)}</td>
                     <td>{getStatusBadge(c.status)}</td>
                     <td>
                       <a href={`/avukat/${c.id}`} className="btn btn-primary btn-sm">

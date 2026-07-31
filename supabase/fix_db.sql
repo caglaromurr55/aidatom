@@ -160,3 +160,35 @@ INSERT INTO public.profiles (
   'approved',
   now(), now()
 ) ON CONFLICT (id) DO UPDATE SET role = 'system_admin', status = 'approved';
+
+-- 7. Enhancement columns for legal_cases (attorney_fee, court_expenses, assigned_lawyer_id)
+ALTER TABLE public.legal_cases ADD COLUMN IF NOT EXISTS attorney_fee NUMERIC(12,2) DEFAULT 0.00;
+ALTER TABLE public.legal_cases ADD COLUMN IF NOT EXISTS court_expenses NUMERIC(12,2) DEFAULT 0.00;
+ALTER TABLE public.legal_cases ADD COLUMN IF NOT EXISTS assigned_lawyer_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+-- 8. Create legal_collections table
+CREATE TABLE IF NOT EXISTS public.legal_collections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  legal_case_id UUID NOT NULL REFERENCES public.legal_cases(id) ON DELETE CASCADE,
+  amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
+  attorney_fee_portion NUMERIC(12,2) DEFAULT 0.00,
+  collection_date TIMESTAMPTZ DEFAULT now(),
+  payment_method TEXT DEFAULT 'bank_transfer',
+  notes TEXT,
+  created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 9. Create call_logs table
+CREATE TABLE IF NOT EXISTS public.call_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  resident_id UUID REFERENCES public.residents(id) ON DELETE SET NULL,
+  contact_request_id UUID REFERENCES public.contact_requests(id) ON DELETE SET NULL,
+  called_by UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+  phone TEXT NOT NULL,
+  call_status TEXT NOT NULL DEFAULT 'reached',
+  notes TEXT NOT NULL,
+  call_date TIMESTAMPTZ DEFAULT now(),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
