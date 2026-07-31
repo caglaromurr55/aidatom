@@ -165,9 +165,6 @@ export default function AdminDashboard() {
             <a href="/admin/kullanicilar" className="btn btn-navy btn-sm">
               <Users size={16} /> Kullanıcı & Rol Yönetimi
             </a>
-            <a href="/santral" className="btn btn-primary btn-sm">
-              <PhoneCall size={16} /> Santral Paneline Git
-            </a>
           </div>
         </div>
       </div>

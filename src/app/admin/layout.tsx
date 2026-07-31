@@ -43,7 +43,6 @@ export default function AdminLayout({
       items: [
         { href: '/admin', label: 'Genel Bakış', icon: BarChart3 },
         { href: '/admin/kullanicilar', label: 'Üye & Rol Yönetimi', icon: Users },
-        { href: '/santral', label: 'Santral Operasyon Paneli', icon: PhoneCall },
       ],
     },
   ];

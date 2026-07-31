@@ -144,6 +144,8 @@ function getRoleDashboard(role: string): string {
       return '/yonetici';
     case 'lawyer':
       return '/avukat';
+    case 'call_center':
+      return '/santral';
     default:
       return '/yonetici';
   }
@@ -159,6 +161,8 @@ function getRoleAllowedPrefixes(role: string): string[] {
       return ['/yonetici'];
     case 'lawyer':
       return ['/avukat'];
+    case 'call_center':
+      return ['/santral'];
     default:
       return ['/yonetici'];
   }
