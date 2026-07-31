@@ -36,8 +36,8 @@ export default function ForgotPasswordPage() {
         setDebugLink(data.debugLink);
       }
       setSuccess(true);
-    } catch {
-      setError('İstek işlenirken bağlantı hatası oluştu. Lütfen tekrar deneyin.');
+    } catch (err: any) {
+      setError(err?.message || 'İstek işlenirken bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setLoading(false);
     }

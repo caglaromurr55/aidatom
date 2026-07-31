@@ -206,3 +206,31 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- 11. Helper function to find profile for password reset (bypassing RLS with SECURITY DEFINER)
+CREATE OR REPLACE FUNCTION public.get_profile_for_password_reset(p_input TEXT)
+RETURNS TABLE (
+  id UUID,
+  full_name TEXT,
+  email TEXT,
+  phone TEXT
+) AS $$
+DECLARE
+  v_clean TEXT;
+  v_base10 TEXT;
+BEGIN
+  v_clean := regexp_replace(p_input, '\D', '', 'g');
+  IF length(v_clean) >= 10 THEN
+    v_base10 := right(v_clean, 10);
+  ELSE
+    v_base10 := v_clean;
+  END IF;
+
+  RETURN QUERY
+  SELECT p.id, p.full_name, p.email, p.phone
+  FROM public.profiles p
+  WHERE (position('@' in p_input) > 0 AND p.email ILIKE p_input)
+     OR (position('@' in p_input) = 0 AND right(regexp_replace(p.phone, '\D', '', 'g'), 10) = v_base10 AND length(v_base10) >= 10)
+  LIMIT 1;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
