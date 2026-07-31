@@ -80,29 +80,43 @@ export default function AdminKullanicilarPage() {
         throw new Error('Geçerli bir telefon numarası giriniz (en az 10 hane).');
       }
 
-      const generatedId = crypto.randomUUID();
-      const generatedEmail = addForm.email.trim() || `${cleanPhone}@aidatom.com`;
-
-      // 1. Insert into public.profiles
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: generatedId,
-        full_name: addForm.full_name,
-        phone: cleanPhone,
-        email: generatedEmail,
-        manager_type: addForm.manager_type,
-        role: addForm.role,
-        status: 'approved',
-        company_name: addForm.manager_type === 'company' ? addForm.company_name : null,
+      // 1. Register in Supabase Auth so user can log in
+      const authEmail = `${cleanPhone}@aidatom.com`;
+      const { data: authData, error: authErr } = await supabase.auth.signUp({
+        email: authEmail,
+        password: addForm.password || 'Password123!',
+        options: {
+          data: {
+            full_name: addForm.full_name,
+            phone: cleanPhone,
+            email: addForm.email || authEmail,
+            manager_type: addForm.manager_type,
+            company_name: addForm.manager_type === 'company' ? addForm.company_name : null,
+            role: addForm.role,
+          },
+        },
       });
 
-      if (profileError) {
-        if (profileError.message.includes('profiles_phone_key')) {
-          throw new Error('Bu telefon numarası ile kayıtlı bir kullanıcı zaten mevcut.');
-        }
-        throw profileError;
+      if (authErr && !authErr.message.includes('already registered')) {
+        throw authErr;
       }
 
-      setSuccess(`Kullanıcı (${addForm.full_name}) başarıyla eklendi ve hesabı onaylandı.`);
+      // 2. Ensure profile is updated in public.profiles with approved status and chosen role
+      const userId = authData.user?.id;
+      if (userId) {
+        await supabase.from('profiles').upsert({
+          id: userId,
+          full_name: addForm.full_name,
+          phone: cleanPhone,
+          email: addForm.email || authEmail,
+          manager_type: addForm.manager_type,
+          role: addForm.role,
+          status: 'approved',
+          company_name: addForm.manager_type === 'company' ? addForm.company_name : null,
+        }, { onConflict: 'id' });
+      }
+
+      setSuccess(`Kullanıcı (${addForm.full_name}) başarıyla eklendi ve hesabı onaylandı. Giriş Şifresi: ${addForm.password}`);
       setAddModalOpen(false);
       setAddForm({
         full_name: '',

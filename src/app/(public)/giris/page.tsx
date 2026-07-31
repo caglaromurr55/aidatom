@@ -28,11 +28,9 @@ export default function LoginPage() {
       }
 
       // Supabase email olarak telefon+@aidatom.com kullanıyoruz
-      // Çünkü Supabase Auth phone login SMS OTP gerektiriyor
-      // SMS altyapısı gelene kadar bu workaround kullanılacak
       const email = `${normalizedPhone}@aidatom.com`;
 
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -46,10 +44,55 @@ export default function LoginPage() {
         return;
       }
 
-      // Başarılı giriş — middleware yönlendirecek
-      window.location.href = '/';
+      // Giriş başarılı — Kullanıcının rolünü ve durumunu çekip ilgili panele yönlendir
+      if (authData.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, status')
+          .eq('id', authData.user.id)
+          .single();
+
+        if (profile) {
+          if (profile.status === 'pending_documents' || profile.status === 'rejected') {
+            window.location.href = '/belgeler';
+            return;
+          }
+          if (profile.status === 'pending_review') {
+            window.location.href = '/beklemede';
+            return;
+          }
+          if (profile.status === 'suspended') {
+            setError('Hesabınız askıya alınmıştır. Lütfen yönetici ile iletişime geçin.');
+            await supabase.auth.signOut();
+            return;
+          }
+
+          // Rol bazlı doğrudan yönlendirme
+          switch (profile.role) {
+            case 'super_admin':
+              window.location.href = '/admin';
+              break;
+            case 'system_admin':
+              window.location.href = '/sistem';
+              break;
+            case 'lawyer':
+              window.location.href = '/avukat';
+              break;
+            case 'call_center':
+              window.location.href = '/santral';
+              break;
+            case 'site_manager':
+            default:
+              window.location.href = '/yonetici';
+              break;
+          }
+          return;
+        }
+      }
+
+      window.location.href = '/yonetici';
     } catch {
-      setError('Beklenmeyen bir hata oluştu.');
+      setError('Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setLoading(false);
     }
@@ -78,33 +121,35 @@ export default function LoginPage() {
           <form className="auth-form" onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label" htmlFor="login-phone">
-                Telefon Numarası <span className="required">*</span>
+                Telefon Numarası
               </label>
-              <div className="phone-input-wrapper">
-                <span className="phone-prefix">+90</span>
-                <input
-                  id="login-phone"
-                  type="tel"
-                  className="form-input"
-                  placeholder="5XX XXX XX XX"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                  required
-                  autoComplete="tel"
-                />
-              </div>
+              <input
+                id="login-phone"
+                type="tel"
+                className="form-input"
+                placeholder="05XX XXX XX XX"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                required
+                autoComplete="tel"
+              />
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="login-password">
-                Şifre <span className="required">*</span>
-              </label>
-              <div className="password-wrapper">
+              <div className="form-label-row">
+                <label className="form-label" htmlFor="login-password">
+                  Şifre
+                </label>
+                <a href="/sifremi-unuttum" className="auth-link text-xs">
+                  Şifremi Unuttum?
+                </a>
+              </div>
+              <div className="password-input-wrapper">
                 <input
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
                   className="form-input"
-                  placeholder="Şifrenizi girin"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -114,6 +159,7 @@ export default function LoginPage() {
                   type="button"
                   className="password-toggle"
                   onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
                   aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
                 >
                   {showPassword ? '👁️' : '👁️‍🗨️'}
@@ -121,24 +167,29 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px' }}>
-              <a href="/sifremi-unuttum" style={{ fontSize: '0.875rem', color: '#0FA3A3', fontWeight: 600, textDecoration: 'underline' }}>
-                Şifremi Unuttum
-              </a>
-            </div>
-
             <button
               type="submit"
-              className="btn-auth-submit"
+              className="btn btn-primary btn-block"
               disabled={loading}
             >
-              {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
+              {loading ? (
+                <span className="btn-loading">
+                  <span className="spinner"></span>
+                  Giriş Yapılıyor...
+                </span>
+              ) : (
+                'Giriş Yap'
+              )}
             </button>
           </form>
 
           <div className="auth-footer">
-            Hesabınız yok mu?{' '}
-            <a href="/kayit">Üye Olun</a>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              Hesabınız yok mu?{' '}
+              <a href="/kayit" className="auth-link">
+                Hemen Kayıt Olun
+              </a>
+            </p>
           </div>
         </div>
       </div>
