@@ -177,9 +177,9 @@ export default function ResetPasswordPage() {
   return (
     <div className="auth-page">
       <div className="auth-container animate-fade-in-up">
-        <div className="auth-logo">
-          <a href="/">
-            <img src="/logo.svg" alt="Aidatom" style={{ height: '42px', width: 'auto' }} />
+        <div className="auth-logo" style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <a href="/" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <img src="/logo.svg" alt="Aidatom" style={{ height: '48px', width: 'auto', maxWidth: '100%', objectFit: 'contain' }} />
           </a>
         </div>
         <Suspense fallback={<div className="auth-card"><p>Yükleniyor...</p></div>}>
