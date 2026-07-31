@@ -6,14 +6,17 @@ export const metadata: Metadata = {
   description: 'Site yöneticileri ve profesyonel site yönetim şirketleri için aidat takibi, alacak yönetimi ve icra takip sistemi. Aidatlarınızı kolayca yönetin.',
   keywords: ['aidat yönetimi', 'site yönetimi', 'aidat takibi', 'icra takibi', 'apartman yönetimi'],
   authors: [{ name: 'Aidatom' }],
+  manifest: '/site.webmanifest',
   icons: {
     icon: [
-      { url: '/icon.svg', type: 'image/svg+xml' },
-      { url: '/icon.ico', type: 'image/x-icon' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
       { url: '/favicon.ico', type: 'image/x-icon' },
     ],
-    shortcut: '/icon.svg',
-    apple: '/icon.svg',
+    shortcut: '/favicon.ico',
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
   },
   openGraph: {
     title: 'Aidatom — Akıllı Aidat Yönetim Sistemi',
@@ -32,10 +35,11 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <head>
-        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
-        <link rel="icon" href="/icon.ico" sizes="any" />
+        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="shortcut icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/icon.svg" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body>
         {children}
