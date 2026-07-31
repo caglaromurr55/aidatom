@@ -3,8 +3,22 @@
 -- Run this in your Supabase Dashboard SQL Editor
 -- ===================================================
 
--- 1. Enable pgcrypto extension
+-- 1. Enable pgcrypto extension and add 'call_center' to user_role ENUM
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_enum 
+    WHERE enumtypid = 'public.user_role'::regtype 
+    AND enumlabel = 'call_center'
+  ) THEN
+    ALTER TYPE public.user_role ADD VALUE 'call_center';
+  END IF;
+EXCEPTION WHEN OTHERS THEN
+  -- Type might be created dynamically or created in public schema
+  NULL;
+END $$;
 
 -- 2. Define auto confirm trigger function
 CREATE OR REPLACE FUNCTION public.auto_confirm_new_user()

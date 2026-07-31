@@ -47,7 +47,7 @@ DROP TYPE IF EXISTS excel_import_status CASCADE;
 -- ===================================================
 
 CREATE TYPE manager_type AS ENUM ('individual', 'company');
-CREATE TYPE user_role AS ENUM ('super_admin', 'system_admin', 'site_manager', 'lawyer');
+CREATE TYPE user_role AS ENUM ('super_admin', 'system_admin', 'site_manager', 'lawyer', 'call_center');
 CREATE TYPE user_status AS ENUM ('pending_documents', 'pending_review', 'approved', 'rejected', 'suspended');
 CREATE TYPE document_type AS ENUM ('karar_defteri', 'kimlik', 'vergi_levhasi', 'imza_sirkuleri', 'vekaletname', 'sozlesme');
 CREATE TYPE document_status AS ENUM ('uploaded', 'approved', 'rejected');
