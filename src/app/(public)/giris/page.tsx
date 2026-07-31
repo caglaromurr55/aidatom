@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { Phone, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import '../auth.css';
 
 export default function LoginPage() {
@@ -103,17 +104,17 @@ export default function LoginPage() {
       <div className="auth-container animate-fade-in-up">
         <div className="auth-logo">
           <a href="/">
-            <img src="/logo.svg" alt="Aidatom" style={{ height: '40px', width: 'auto' }} />
+            <img src="/logo.svg" alt="Aidatom" style={{ height: '42px', width: 'auto' }} />
           </a>
         </div>
 
         <div className="auth-card">
           <h1>Giriş Yap</h1>
-          <p className="subtitle">Hesabınıza giriş yaparak devam edin.</p>
+          <p className="subtitle">Aidatom Yönetim Paneline Hoş Geldiniz.</p>
 
           {error && (
             <div className="auth-alert error">
-              <span>⚠</span>
+              <AlertCircle size={18} style={{ flexShrink: 0, marginTop: '2px' }} />
               <span>{error}</span>
             </div>
           )}
@@ -123,28 +124,31 @@ export default function LoginPage() {
               <label className="form-label" htmlFor="login-phone">
                 Telefon Numarası
               </label>
-              <input
-                id="login-phone"
-                type="tel"
-                className="form-input"
-                placeholder="05XX XXX XX XX"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                required
-                autoComplete="tel"
-              />
+              <div className="phone-input-wrapper">
+                <span className="phone-prefix">+90</span>
+                <input
+                  id="login-phone"
+                  type="tel"
+                  className="form-input"
+                  placeholder="5XX XXX XX XX"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  autoComplete="tel"
+                />
+              </div>
             </div>
 
             <div className="form-group">
-              <div className="form-label-row">
-                <label className="form-label" htmlFor="login-password">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                <label className="form-label" htmlFor="login-password" style={{ margin: 0 }}>
                   Şifre
                 </label>
-                <a href="/sifremi-unuttum" className="auth-link text-xs">
+                <a href="/sifremi-unuttum" className="auth-link" style={{ fontSize: '13px' }}>
                   Şifremi Unuttum?
                 </a>
               </div>
-              <div className="password-input-wrapper">
+              <div className="password-wrapper">
                 <input
                   id="login-password"
                   type={showPassword ? 'text' : 'password'}
@@ -154,6 +158,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   autoComplete="current-password"
+                  style={{ paddingRight: '44px' }}
                 />
                 <button
                   type="button"
@@ -162,29 +167,23 @@ export default function LoginPage() {
                   tabIndex={-1}
                   aria-label={showPassword ? 'Şifreyi gizle' : 'Şifreyi göster'}
                 >
-                  {showPassword ? '👁️' : '👁️‍🗨️'}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
             </div>
 
             <button
               type="submit"
-              className="btn btn-primary btn-block"
+              className="btn-auth-submit"
               disabled={loading}
+              style={{ marginTop: '1.25rem' }}
             >
-              {loading ? (
-                <span className="btn-loading">
-                  <span className="spinner"></span>
-                  Giriş Yapılıyor...
-                </span>
-              ) : (
-                'Giriş Yap'
-              )}
+              {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
             </button>
           </form>
 
           <div className="auth-footer">
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            <p>
               Hesabınız yok mu?{' '}
               <a href="/kayit" className="auth-link">
                 Hemen Kayıt Olun
